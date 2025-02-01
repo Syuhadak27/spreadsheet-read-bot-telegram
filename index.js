@@ -1,0 +1,120 @@
+import { searchDatabase } from './master.js'; // Menggunakan import untuk master.js
+import { searchInout } from './inout.js'; // Menggunakan import untuk inout.js
+import { config } from './config.js';
+
+const token = config.TOKEN;
+
+export default {
+  async fetch(request, env) {
+    const url = new URL(request.url);
+    const { pathname } = url;
+
+    if (pathname === "/setWebhook") {
+      return setWebhook(env);
+    }
+
+    if (pathname === "/webhook") {
+      const update = await request.json();
+      const chatId = update.message?.chat?.id;
+      const text = update.message?.text;
+
+      if (!chatId || !text) {
+        return new Response("Invalid request", { status: 400 });
+      }
+
+      // Tangani command /start
+      if (text.startsWith("/start")) {
+        await sendMessage(chatId, "✅ Bot Aktif dan Siap Digunakan!", token);
+        return new Response("Start command handled", { status: 200 });
+      }
+
+      // Cek apakah pesan diawali dengan titik (.) untuk pencarian di inout
+      let responseText;
+      if (text.startsWith(".")) {
+        responseText = await searchInout(text.substring(1).trim()); // Hilangkan titik sebelum mencari
+      } else {
+        responseText = await searchDatabase(text);
+      }
+
+      // Jika tidak ada hasil
+      if (!responseText) {
+        responseText = `Kata kunci: <code>${text}</code>\nTidak ada hasil yang ditemukan.`;
+      }
+
+      // Jika pesan lebih dari 4000 karakter, gunakan splitAndSend
+      if (responseText.length > 4000) {
+        await splitAndSend(chatId, responseText, token);
+      } else {
+        await sendMessage(chatId, responseText, token);
+      }
+
+      return new Response("Success", { status: 200 });
+    }
+
+    return new Response("Not Found", { status: 404 });
+  }
+};
+
+// Fungsi untuk mengirim pesan ke Telegram
+async function sendMessage(chatId, text, token) {
+  const url = `https://api.telegram.org/bot${token}/sendMessage`;
+  const payload = {
+    chat_id: chatId,
+    text: text,
+    parse_mode: "HTML"
+  };
+
+  return fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+}
+
+// Fungsi untuk membagi pesan panjang
+async function splitAndSend(chatId, text, token) {
+  const maxLength = 4000;
+  const messages = [];
+
+  while (text.length > maxLength) {
+    let splitAt = text.lastIndexOf("</blockquote>", maxLength);
+    if (splitAt === -1) splitAt = text.lastIndexOf(" ", maxLength);
+    if (splitAt === -1) splitAt = maxLength;
+
+    const part = text.substring(0, splitAt + "</blockquote>".length);
+    messages.push(part);
+
+    text = text.substring(splitAt + "</blockquote>".length).trim();
+  }
+
+  if (text.length > 0) messages.push(text);
+
+  for (const msg of messages) {
+    await sendMessage(chatId, msg, token);
+  }
+}
+
+async function setWebhook(env) {
+  const webhookUrl = `https://cari.henot20561.workers.dev/webhook`; // Ganti dengan URL worker Anda yang benar
+  const url = `https://api.telegram.org/bot${token}/setWebhook`;
+  const payload = { url: webhookUrl };
+
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const result = await response.json();
+    if (!response.ok) {
+      console.error("Gagal set webhook:", result); // Log pesan kesalahan dari respon
+      throw new Error(`Gagal set webhook: ${result.description || 'Kesalahan tidak diketahui'}`);
+    }
+
+    return new Response(JSON.stringify(result, null, 2), { status: 200, headers: { "Content-Type": "application/json" } });
+  } catch (error) {
+    console.error("Error setup webhook:", error.message); // Log pesan kesalahan
+    return new Response(`Webhook setup gagal: ${error.message}`, { status: 500 });
+  }
+}
