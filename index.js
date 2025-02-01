@@ -1,6 +1,7 @@
-import { searchDatabase } from './master.js'; // Menggunakan import untuk master.js
-import { searchInout } from './inout.js'; // Menggunakan import untuk inout.js
+import { searchDatabase } from './master';
+import { searchInout } from './inout.js';
 import { config } from './config.js';
+import { deleteMessage } from './delete.js'; // Import fungsi deleteMessage
 
 const token = config.TOKEN;
 
@@ -9,28 +10,29 @@ export default {
     const url = new URL(request.url);
     const { pathname } = url;
 
-    if (pathname === "/setWebhook") {
+    if (pathname === '/setWebhook') {
       return setWebhook(env);
     }
 
-    if (pathname === "/webhook") {
+    if (pathname === '/webhook') {
       const update = await request.json();
       const chatId = update.message?.chat?.id;
       const text = update.message?.text;
+      const messageId = update.message?.message_id; // Menyimpan ID pesan
 
-      if (!chatId || !text) {
-        return new Response("Invalid request", { status: 400 });
+      if (!chatId || !text || !messageId) {
+        return new Response('Invalid request', { status: 400 });
       }
 
       // Tangani command /start
-      if (text.startsWith("/start")) {
-        await sendMessage(chatId, "✅ Bot Aktif dan Siap Digunakan!", token);
-        return new Response("Start command handled", { status: 200 });
+      if (text.startsWith('/start')) {
+        await sendMessage(chatId, '✅ Bot Aktif dan Siap Digunakan!', token);
+        return new Response('Start command handled', { status: 200 });
       }
 
       // Cek apakah pesan diawali dengan titik (.) untuk pencarian di inout
       let responseText;
-      if (text.startsWith(".")) {
+      if (text.startsWith('.')) {
         responseText = await searchInout(text.substring(1).trim()); // Hilangkan titik sebelum mencari
       } else {
         responseText = await searchDatabase(text);
@@ -48,10 +50,15 @@ export default {
         await sendMessage(chatId, responseText, token);
       }
 
-      return new Response("Success", { status: 200 });
+      // Hapus pesan setelah 6 detik
+      setTimeout(async () => {
+        await deleteMessage(chatId, messageId, token);
+      }, 6000); // 6000 ms = 6 detik
+
+      return new Response('Success', { status: 200 });
     }
 
-    return new Response("Not Found", { status: 404 });
+    return new Response('Not Found', { status: 404 });
   }
 };
 
@@ -61,13 +68,13 @@ async function sendMessage(chatId, text, token) {
   const payload = {
     chat_id: chatId,
     text: text,
-    parse_mode: "HTML"
+    parse_mode: 'HTML',
   };
 
   return fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
   });
 }
 
@@ -77,14 +84,14 @@ async function splitAndSend(chatId, text, token) {
   const messages = [];
 
   while (text.length > maxLength) {
-    let splitAt = text.lastIndexOf("</blockquote>", maxLength);
-    if (splitAt === -1) splitAt = text.lastIndexOf(" ", maxLength);
+    let splitAt = text.lastIndexOf('</blockquote>', maxLength);
+    if (splitAt === -1) splitAt = text.lastIndexOf(' ', maxLength);
     if (splitAt === -1) splitAt = maxLength;
 
-    const part = text.substring(0, splitAt + "</blockquote>".length);
+    const part = text.substring(0, splitAt + '</blockquote>'.length);
     messages.push(part);
 
-    text = text.substring(splitAt + "</blockquote>".length).trim();
+    text = text.substring(splitAt + '</blockquote>'.length).trim();
   }
 
   if (text.length > 0) messages.push(text);
@@ -101,20 +108,20 @@ async function setWebhook(env) {
 
   try {
     const response = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
     });
 
     const result = await response.json();
     if (!response.ok) {
-      console.error("Gagal set webhook:", result); // Log pesan kesalahan dari respon
+      console.error('Gagal set webhook:', result); // Log pesan kesalahan dari respon
       throw new Error(`Gagal set webhook: ${result.description || 'Kesalahan tidak diketahui'}`);
     }
 
-    return new Response(JSON.stringify(result, null, 2), { status: 200, headers: { "Content-Type": "application/json" } });
+    return new Response(JSON.stringify(result, null, 2), { status: 200, headers: { 'Content-Type': 'application/json' } });
   } catch (error) {
-    console.error("Error setup webhook:", error.message); // Log pesan kesalahan
+    console.error('Error setup webhook:', error.message); // Log pesan kesalahan
     return new Response(`Webhook setup gagal: ${error.message}`, { status: 500 });
   }
 }

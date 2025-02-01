@@ -22,10 +22,15 @@ export async function searchInout(query) {
 
     if (results.length === 0) return null;
 
-    return results.map(row => {
+    // Menambahkan header "bot by aku" di atas hasil pencarian
+    const header = "🟢 Masuk\n🔴 Keluar\n\n"; // Header pesan
+    const formattedResults = results.map(row => {
       let formattedDate = row[0];
       return `<blockquote>${formattedDate} • <code>${row[1]}</code> • ${row[2]} • ${row[3]} • ${row[4]} • ${row[5]}</blockquote>`;
     }).join("\n");
+
+    // Gabungkan header dengan hasil pencarian
+    return header + formattedResults;
   } catch (error) {
     console.error(error);
     return null;
