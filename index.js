@@ -5,6 +5,7 @@ import { sendLog } from './log.js'; // Import fungsi log
 import { deleteMessage } from './delete.js';
 
 const token = config.TOKEN;
+const webhookUrl = config.WEBHOOK_URL
 
 export default {
   async fetch(request, env) {
@@ -131,7 +132,7 @@ async function splitAndSend(chatId, text, token) {
 
 // Fungsi untuk mengatur webhook
 async function setWebhook(env) {
-  const webhookUrl = `https://cari.henot20561.workers.dev/webhook`; // Ganti dengan URL worker Anda
+  //const webhookUrl = `https://cari.henot20561.workers.dev/webhook`; // Ganti dengan URL worker Anda
   const url = `https://api.telegram.org/bot${token}/setWebhook`;
   const payload = { url: webhookUrl };
 
