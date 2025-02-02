@@ -22,14 +22,30 @@ export async function searchInout(query) {
 
     if (results.length === 0) return null;
 
-    // Menambahkan header "bot by aku" di atas hasil pencarian
-    const header = "🟢 Masuk\n🔴 Keluar\n\n"; // Header pesan
+    let totalMasuk = 0;
+    let totalKeluar = 0;
+
+    // Proses hasil pencarian
     const formattedResults = results.map(row => {
       let formattedDate = row[0];
+
+      // Ekstrak angka dari kolom 4 (Masuk) dan kolom 5 (Keluar)
+      let masuk = parseInt(row[3].replace(/\D/g, ""), 10) || 0; // Hapus semua non-angka
+      let keluar = parseInt(row[4].replace(/\D/g, ""), 10) || 0;
+
+      // Tambahkan ke total
+      totalMasuk += masuk;
+      totalKeluar += keluar;
+
       return `<blockquote>${formattedDate} • <code>${row[1]}</code> • ${row[2]} • ${row[3]} • ${row[4]} • ${row[5]}</blockquote>`;
     }).join("\n");
 
-    // Gabungkan header dengan hasil pencarian
+    // Hitung sisa stok
+    const totalTersisa = totalMasuk - totalKeluar;
+
+    // Buat header dengan total masuk, keluar, dan sisa
+    const header = `<pre>🟢 Masuk -- ${totalMasuk} pcs\n🔴 Keluar -- ${totalKeluar} pcs</pre>\n<blockquote>💥 Tersisa -- ${totalTersisa} pcs</blockquote>\n\n`;
+
     return header + formattedResults;
   } catch (error) {
     console.error(error);
