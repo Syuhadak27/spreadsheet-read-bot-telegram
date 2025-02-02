@@ -1,8 +1,8 @@
 import { searchDatabase } from './master.js';
 import { searchInout } from './inout.js';
 import { config } from './config.js';
-import { deleteMessage } from './delete.js';
 import { sendLog } from './log.js'; // Import fungsi log
+import { deleteMessage } from './delete.js';
 
 const token = config.TOKEN;
 
@@ -49,16 +49,31 @@ export default {
       await sendLog(username, text);
 
       // Jika pesan lebih dari 4000 karakter, gunakan splitAndSend
+      let botMessage;
       if (responseText.length > 4000) {
-        await splitAndSend(chatId, responseText, token);
+        botMessage = await splitAndSend(chatId, responseText, token);
       } else {
-        await sendMessage(chatId, responseText, token);
+        botMessage = await sendMessage(chatId, responseText, token);
       }
 
-      // Hapus pesan user setelah 6 detik
-      setTimeout(async () => {
-        await deleteMessage(chatId, messageId, token);
-      }, 6000);
+      // Jika DM (chat ID positif), kirim pesan sementara sebelum dihapus
+      if (chatId > 0) {
+        setTimeout(async () => {
+          try {
+            const tempMessage = await sendMessage(chatId, "⌛ Pesan akan dihapus dalam 6 detik...", token);
+            await deleteMessage(chatId, tempMessage.message_id, 6, token);
+          } catch (error) {
+            console.error("🚨 Error menghapus pesan sementara:", error);
+          }
+        }, 6000);
+      } else { // Jika di grup
+        setTimeout(async () => {
+          await deleteMessage(chatId, messageId, 6, token); // Hapus pesan user
+          if (botMessage) {
+            await deleteMessage(chatId, botMessage.message_id, 6, token); // Hapus pesan bot
+          }
+        }, 6000);
+      }
 
       return new Response('Success', { status: 200 });
     }
@@ -66,6 +81,9 @@ export default {
     return new Response('Not Found', { status: 404 });
   }
 };
+
+// Fungsi untuk menghapus pesan dengan delay tertentu
+
 
 // Fungsi untuk mengirim pesan ke Telegram
 async function sendMessage(chatId, text, token) {
@@ -76,11 +94,13 @@ async function sendMessage(chatId, text, token) {
     parse_mode: 'HTML',
   };
 
-  return fetch(url, {
+  const response = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
+
+  return response.ok ? await response.json() : null;
 }
 
 // Fungsi untuk membagi pesan panjang
@@ -101,9 +121,12 @@ async function splitAndSend(chatId, text, token) {
 
   if (text.length > 0) messages.push(text);
 
+  let lastMessage = null;
   for (const msg of messages) {
-    await sendMessage(chatId, msg, token);
+    lastMessage = await sendMessage(chatId, msg, token);
   }
+
+  return lastMessage; // Kembalikan pesan terakhir yang dikirim
 }
 
 // Fungsi untuk mengatur webhook

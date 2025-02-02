@@ -4,17 +4,17 @@ const BOT_TOKEN = config.TOKEN;
 const LOG_CHANNEL_ID = config.LOG_CHANNEL_ID; // ID channel log Telegram (gunakan format negatif, misal: -1001234567890)
 
 export async function sendLog(username, query) {
-  const now = new Date();
-  
   // Konversi waktu ke GMT+7
-  const options = { timeZone: "Asia/Bangkok", hour12: false };
-  const date = now.toLocaleDateString("id-ID", options).split("/").reverse().join("-");
+  const options = { timeZone: "Asia/Jakarta", hour12: false };
+  const now = new Date();
+  const [day, month, year] = now.toLocaleDateString("id-ID", options).split("/");
+  const date = `${day}-${month}-${year}`;
   const time = now.toLocaleTimeString("id-ID", options);
 
-  const logMessage = `<blockquote><b>📌 Log Pencarian</b>\n` +
-                     `<b>👤 User:</b> @${username}\n` +
-                     `<b>📅 Tanggal:</b> ${date}\n` +
-                     `<b>⏰ Waktu:</b> ${time}\n` +
+console.log(`${date} ${time}`);
+  const logMessage =// `<blockquote><b>📌 Log Pencarian</b>\n` +
+                     `<blockquote><b>👤 User:</b> @${username}\n` +
+                     `<b>📅 Tanggal:</b> ${date} ${time}\n` +
                      `<b>🔍 Pencarian:</b> <code>${query}</code></blockquote>`;
 
   await sendMessage(LOG_CHANNEL_ID, logMessage);

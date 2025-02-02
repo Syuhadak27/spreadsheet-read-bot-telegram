@@ -23,7 +23,7 @@ export async function searchDatabase(query) {
 
     const header = `CPU : 🟢🔴🟠🟡🔵 • • Kata Kunci : <code>${query}</code>`;
     const formattedResults = results.map(row =>
-      `<blockquote>${row[0]} • <code>${row[1]}</code> • ${row[2]} • ${row[3]} • ${row[4]}</blockquote>`
+      `<blockquote>➤${row[0]} • <code>${row[1]}</code> • ${row[2]} • ${row[3]} • ${row[4]}</blockquote>`
     ).join("\n");
 
     return `${header}\n\n${formattedResults}`;
