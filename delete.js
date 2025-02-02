@@ -1,9 +1,9 @@
-// Fungsi untuk menghapus pesan di Telegram
 export async function deleteMessage(chatId, messageId, token) {
   const url = `https://api.telegram.org/bot${token}/deleteMessage`;
+
   const payload = {
     chat_id: chatId,
-    message_id: messageId,
+    message_id: messageId
   };
 
   try {
@@ -13,11 +13,16 @@ export async function deleteMessage(chatId, messageId, token) {
       body: JSON.stringify(payload),
     });
 
+    const result = await response.json();
     if (!response.ok) {
-      const result = await response.json();
-      console.error('Error deleting message:', result);
+      console.error('Gagal menghapus pesan:', result);
+      return false;
     }
+
+    console.log(`✅ Pesan ${messageId} dihapus dari chat ${chatId}`);
+    return true;
   } catch (error) {
-    console.error('Error deleting message:', error);
+    console.error('Error menghapus pesan:', error.message);
+    return false;
   }
 }

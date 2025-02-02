@@ -1,7 +1,8 @@
-import { searchDatabase } from './master';
+import { searchDatabase } from './master.js';
 import { searchInout } from './inout.js';
 import { config } from './config.js';
-import { deleteMessage } from './delete.js'; // Import fungsi deleteMessage
+import { deleteMessage } from './delete.js';
+import { sendLog } from './log.js'; // Import fungsi log
 
 const token = config.TOKEN;
 
@@ -18,7 +19,8 @@ export default {
       const update = await request.json();
       const chatId = update.message?.chat?.id;
       const text = update.message?.text;
-      const messageId = update.message?.message_id; // Menyimpan ID pesan
+      const messageId = update.message?.message_id;
+      const username = update.message?.from?.username || "Unknown"; // Ambil username
 
       if (!chatId || !text || !messageId) {
         return new Response('Invalid request', { status: 400 });
@@ -26,7 +28,7 @@ export default {
 
       // Tangani command /start
       if (text.startsWith('/start')) {
-        await sendMessage(chatId, '✅ Bot Aktif dan Siap Digunakan!', token);
+        await sendMessage(chatId, '✅ Bot Aktif dan Siap Digunakan!\nGunakan dengan bijak', token);
         return new Response('Start command handled', { status: 200 });
       }
 
@@ -43,6 +45,9 @@ export default {
         responseText = `Kata kunci: <code>${text}</code>\nTidak ada hasil yang ditemukan.`;
       }
 
+      // Kirim log pencarian ke channel Telegram
+      await sendLog(username, text);
+
       // Jika pesan lebih dari 4000 karakter, gunakan splitAndSend
       if (responseText.length > 4000) {
         await splitAndSend(chatId, responseText, token);
@@ -50,10 +55,10 @@ export default {
         await sendMessage(chatId, responseText, token);
       }
 
-      // Hapus pesan setelah 6 detik
+      // Hapus pesan user setelah 6 detik
       setTimeout(async () => {
         await deleteMessage(chatId, messageId, token);
-      }, 6000); // 6000 ms = 6 detik
+      }, 6000);
 
       return new Response('Success', { status: 200 });
     }
@@ -101,8 +106,9 @@ async function splitAndSend(chatId, text, token) {
   }
 }
 
+// Fungsi untuk mengatur webhook
 async function setWebhook(env) {
-  const webhookUrl = `https://cari.henot20561.workers.dev/webhook`; // Ganti dengan URL worker Anda yang benar
+  const webhookUrl = `https://cari.henot20561.workers.dev/webhook`; // Ganti dengan URL worker Anda
   const url = `https://api.telegram.org/bot${token}/setWebhook`;
   const payload = { url: webhookUrl };
 
@@ -115,13 +121,13 @@ async function setWebhook(env) {
 
     const result = await response.json();
     if (!response.ok) {
-      console.error('Gagal set webhook:', result); // Log pesan kesalahan dari respon
+      console.error('Gagal set webhook:', result);
       throw new Error(`Gagal set webhook: ${result.description || 'Kesalahan tidak diketahui'}`);
     }
 
     return new Response(JSON.stringify(result, null, 2), { status: 200, headers: { 'Content-Type': 'application/json' } });
   } catch (error) {
-    console.error('Error setup webhook:', error.message); // Log pesan kesalahan
+    console.error('Error setup webhook:', error.message);
     return new Response(`Webhook setup gagal: ${error.message}`, { status: 500 });
   }
 }
