@@ -2,7 +2,6 @@ import { searchDatabase } from './master.js';
 import { searchInout } from './inout.js';
 import { config } from './config.js';
 import { sendLog } from './log.js';
-import { deleteMessage } from './delete.js';
 
 const token = config.TOKEN;
 const webhookUrl = config.WEBHOOK_URL;
@@ -27,9 +26,9 @@ export default {
         return new Response('Invalid request', { status: 400 });
       }
 
-      // Tangani command /start dengan tombol Source Code
+      // Handle /start command with Source Code button
       if (text.startsWith('/start')) {
-        await sendMessageWithButton(chatId, '✅ Bot Aktif dan Siap Digunakan!\nGunakan dengan bijak', token);
+        await sendMessageWithButton(chatId, '✅ Bot Aktif dan Siap Digunakan!\nBot berjalan di serverles cloudflare \nby', token);
         return new Response('Start command handled', { status: 200 });
       }
 
@@ -44,6 +43,7 @@ export default {
         responseText = `Kata kunci: <code>${text}</code>\nTidak ada hasil yang ditemukan.`;
       }
 
+      // Log the user query
       await sendLog(username, text);
 
       let botMessage;
@@ -53,32 +53,14 @@ export default {
         botMessage = await sendMessage(chatId, responseText, token);
       }
 
-      if (chatId > 0) {
-        setTimeout(async () => {
-          try {
-            const tempMessage = await sendMessage(chatId, "⌛ Pesan akan dihapus dalam 6 detik...", token);
-            await deleteMessage(chatId, tempMessage.message_id, 6, token);
-          } catch (error) {
-            console.error("🚨 Error menghapus pesan sementara:", error);
-          }
-        }, 6000);
-      } else {
-        setTimeout(async () => {
-          await deleteMessage(chatId, messageId, 6, token);
-          if (botMessage) {
-            await deleteMessage(chatId, botMessage.message_id, 6, token);
-          }
-        }, 6000);
-      }
-
-      return new Response('Success', { status: 200 });
+      return new Response('Request handled', { status: 200 });
     }
 
     return new Response('Not Found', { status: 404 });
   }
 };
 
-// Fungsi untuk mengirim pesan dengan tombol Source Code
+// Function to send a message with Source Code button
 async function sendMessageWithButton(chatId, text, token) {
   const url = `https://api.telegram.org/bot${token}/sendMessage`;
   const payload = {
@@ -87,7 +69,13 @@ async function sendMessageWithButton(chatId, text, token) {
     parse_mode: 'HTML',
     reply_markup: JSON.stringify({
       inline_keyboard: [
-        [{ text: "📜 Source Code", url: "https://github.com/Syuhadak27/spreadsheet-read-bot-telegram/tree/cloudflare" }]
+        [
+          { text: "📜 Source Code", url: "https://github.com/Syuhadak27/spreadsheet-read-bot-telegram/tree/cloudflare" }
+        ],
+        [
+          //{ text: "🔗 Website", url: "https://yourwebsite.com" },
+          { text: "📢 Channel", url: "https://t.me/dumbzzz" }
+        ]
       ]
     })
   };
@@ -101,7 +89,8 @@ async function sendMessageWithButton(chatId, text, token) {
   return response.ok ? await response.json() : null;
 }
 
-// Fungsi untuk mengirim pesan biasa
+
+// Function to send a regular message
 async function sendMessage(chatId, text, token) {
   const url = `https://api.telegram.org/bot${token}/sendMessage`;
   const payload = {
@@ -119,7 +108,7 @@ async function sendMessage(chatId, text, token) {
   return response.ok ? await response.json() : null;
 }
 
-// Fungsi untuk membagi pesan panjang
+// Function to split long messages
 async function splitAndSend(chatId, text, token) {
   const maxLength = 4000;
   const messages = [];
@@ -145,7 +134,7 @@ async function splitAndSend(chatId, text, token) {
   return lastMessage;
 }
 
-// Fungsi untuk mengatur webhook
+// Function to set webhook
 async function setWebhook(env) {
   const url = `https://api.telegram.org/bot${token}/setWebhook`;
   const payload = { url: webhookUrl };
