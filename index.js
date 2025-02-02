@@ -1,11 +1,11 @@
 import { searchDatabase } from './master.js';
 import { searchInout } from './inout.js';
 import { config } from './config.js';
-import { sendLog } from './log.js'; // Import fungsi log
+import { sendLog } from './log.js';
 import { deleteMessage } from './delete.js';
 
 const token = config.TOKEN;
-const webhookUrl = config.WEBHOOK_URL
+const webhookUrl = config.WEBHOOK_URL;
 
 export default {
   async fetch(request, env) {
@@ -21,35 +21,31 @@ export default {
       const chatId = update.message?.chat?.id;
       const text = update.message?.text;
       const messageId = update.message?.message_id;
-      const username = update.message?.from?.username || "Unknown"; // Ambil username
+      const username = update.message?.from?.username || "Unknown";
 
       if (!chatId || !text || !messageId) {
         return new Response('Invalid request', { status: 400 });
       }
 
-      // Tangani command /start
+      // Tangani command /start dengan tombol Source Code
       if (text.startsWith('/start')) {
-        await sendMessage(chatId, '✅ Bot Aktif dan Siap Digunakan!\nGunakan dengan bijak', token);
+        await sendMessageWithButton(chatId, '✅ Bot Aktif dan Siap Digunakan!\nGunakan dengan bijak', token);
         return new Response('Start command handled', { status: 200 });
       }
 
-      // Cek apakah pesan diawali dengan titik (.) untuk pencarian di inout
       let responseText;
       if (text.startsWith('.')) {
-        responseText = await searchInout(text.substring(1).trim()); // Hilangkan titik sebelum mencari
+        responseText = await searchInout(text.substring(1).trim());
       } else {
         responseText = await searchDatabase(text);
       }
 
-      // Jika tidak ada hasil
       if (!responseText) {
         responseText = `Kata kunci: <code>${text}</code>\nTidak ada hasil yang ditemukan.`;
       }
 
-      // Kirim log pencarian ke channel Telegram
       await sendLog(username, text);
 
-      // Jika pesan lebih dari 4000 karakter, gunakan splitAndSend
       let botMessage;
       if (responseText.length > 4000) {
         botMessage = await splitAndSend(chatId, responseText, token);
@@ -57,7 +53,6 @@ export default {
         botMessage = await sendMessage(chatId, responseText, token);
       }
 
-      // Jika DM (chat ID positif), kirim pesan sementara sebelum dihapus
       if (chatId > 0) {
         setTimeout(async () => {
           try {
@@ -67,11 +62,11 @@ export default {
             console.error("🚨 Error menghapus pesan sementara:", error);
           }
         }, 6000);
-      } else { // Jika di grup
+      } else {
         setTimeout(async () => {
-          await deleteMessage(chatId, messageId, 6, token); // Hapus pesan user
+          await deleteMessage(chatId, messageId, 6, token);
           if (botMessage) {
-            await deleteMessage(chatId, botMessage.message_id, 6, token); // Hapus pesan bot
+            await deleteMessage(chatId, botMessage.message_id, 6, token);
           }
         }, 6000);
       }
@@ -83,10 +78,30 @@ export default {
   }
 };
 
-// Fungsi untuk menghapus pesan dengan delay tertentu
+// Fungsi untuk mengirim pesan dengan tombol Source Code
+async function sendMessageWithButton(chatId, text, token) {
+  const url = `https://api.telegram.org/bot${token}/sendMessage`;
+  const payload = {
+    chat_id: chatId,
+    text: text,
+    parse_mode: 'HTML',
+    reply_markup: JSON.stringify({
+      inline_keyboard: [
+        [{ text: "📜 Source Code", url: "https://github.com/Syuhadak27/spreadsheet-read-bot-telegram/tree/cloudflare" }]
+      ]
+    })
+  };
 
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
 
-// Fungsi untuk mengirim pesan ke Telegram
+  return response.ok ? await response.json() : null;
+}
+
+// Fungsi untuk mengirim pesan biasa
 async function sendMessage(chatId, text, token) {
   const url = `https://api.telegram.org/bot${token}/sendMessage`;
   const payload = {
@@ -127,12 +142,11 @@ async function splitAndSend(chatId, text, token) {
     lastMessage = await sendMessage(chatId, msg, token);
   }
 
-  return lastMessage; // Kembalikan pesan terakhir yang dikirim
+  return lastMessage;
 }
 
 // Fungsi untuk mengatur webhook
 async function setWebhook(env) {
-  //const webhookUrl = `https://cari.henot20561.workers.dev/webhook`; // Ganti dengan URL worker Anda
   const url = `https://api.telegram.org/bot${token}/setWebhook`;
   const payload = { url: webhookUrl };
 
