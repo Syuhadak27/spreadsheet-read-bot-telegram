@@ -43,11 +43,11 @@ export default {
       } else {
         responseText = await searchDatabase(text);
       }
-
+      
       if (!responseText) {
         responseText = `Kata kunci: <code>${text}</code>\nTidak ada hasil yang ditemukan.`;
       }
-		
+	  
 	  setTimeout(async () => {
         await deleteMessage(chatId, messageId, token);
       }, 6); // Menghapus pesan setelah 5 detik
