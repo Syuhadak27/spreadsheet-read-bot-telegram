@@ -3,6 +3,7 @@ import { searchInout } from './inout.js';
 import { config } from './config.js';
 import { sendLog } from './log.js';
 
+
 const token = config.TOKEN;
 const webhookUrl = config.WEBHOOK_URL;
 
@@ -20,7 +21,8 @@ export default {
       const chatId = update.message?.chat?.id;
       const text = update.message?.text;
       const messageId = update.message?.message_id;
-      const username = update.message?.from?.username || "Unknown";
+	  const username = update.message?.from?.username || update.message?.from?.first_name || "Unknown";
+      //const username = update.message?.from?.username || "Unknown";
 
       if (!chatId || !text || !messageId) {
         return new Response('Invalid request', { status: 400 });
@@ -34,7 +36,9 @@ export default {
 
       let responseText;
       if (text.startsWith('.')) {
-        responseText = await searchInout(text.substring(1).trim());
+        const query = text.substring(1).trim();
+		responseText =query ? await searchInout(query)  :  "Tidak bisa tanpa kata kunci";
+		//responseText = await searchInout(text.substring(1).trim());
       } else {
         responseText = await searchDatabase(text);
       }
@@ -42,7 +46,8 @@ export default {
       if (!responseText) {
         responseText = `Kata kunci: <code>${text}</code>\nTidak ada hasil yang ditemukan.`;
       }
-
+		
+	 
       // Log the user query
       await sendLog(username, text);
 
@@ -73,7 +78,7 @@ async function sendMessageWithButton(chatId, text, token) {
           { text: "📜 Source Code", url: "https://github.com/Syuhadak27/spreadsheet-read-bot-telegram/tree/cloudflare" }
         ],
         [
-          //{ text: "🔗 Website", url: "https://yourwebsite.com" },
+          { text: "👨‍ Owner", url: "https://t.me/AlfiSyuhadak" },
           { text: "📢 Channel", url: "https://t.me/dumbzzz" }
         ]
       ]
