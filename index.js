@@ -2,6 +2,7 @@ import { searchDatabase } from './master.js';
 import { searchInout } from './inout.js';
 import { config } from './config.js';
 import { sendLog } from './log.js';
+import { deleteMessage } from './delete.js';
 
 
 const token = config.TOKEN;
@@ -47,7 +48,10 @@ export default {
         responseText = `Kata kunci: <code>${text}</code>\nTidak ada hasil yang ditemukan.`;
       }
 		
-	 
+	  setTimeout(async () => {
+        await deleteMessage(chatId, messageId, token);
+      }, 6); // Menghapus pesan setelah 5 detik
+
       // Log the user query
       await sendLog(username, text);
 
