@@ -1,11 +1,6 @@
-import { config } from "./config.js";
-const SPREADSHEET_ID = config.SPREADSHEET_ID;
-const GOOGLE_API_KEY = config.GOOGLE_API_KEY;
-
-
 const CACHE_EXPIRY = 43200; // 12 jam dalam detik
 let cacheData = {
-  main: { data: null, timestamp: 0 },
+  main: { data: null, timestamp: 0, lastUpdated: null },
 };
 
 async function getCachedData(sheetId, range, cacheKey, apiKey) {
@@ -29,13 +24,14 @@ async function getCachedData(sheetId, range, cacheKey, apiKey) {
       return [];
     }
 
-    // Simpan data ke cache
+    // Simpan data ke cache dengan timestamp terbaru
     cacheData[cacheKey] = {
       data: json.values,
       timestamp: now,
+      lastUpdated: new Date().toLocaleString("id-ID", { timeZone: "Asia/Jakarta" }), // Simpan waktu dalam format lokal
     };
 
-    console.log(`🔄 Cache diperbarui untuk ${cacheKey}`);
+    console.log(`🔄 Cache diperbarui untuk ${cacheKey} pada ${cacheData[cacheKey].lastUpdated}`);
     return json.values;
   } catch (error) {
     console.error(`❌ Error saat mengambil data: ${error.message}`);
@@ -45,8 +41,13 @@ async function getCachedData(sheetId, range, cacheKey, apiKey) {
 
 // Fungsi untuk mereset cache
 export function resetCache() {
-  cacheData = { main: { data: null, timestamp: 0 } };
+  cacheData = { main: { data: null, timestamp: 0, lastUpdated: null } };
   console.log("♻️ Cache berhasil di-reset.");
+}
+
+// Fungsi untuk mendapatkan timestamp terakhir cache diperbarui
+export function getLastCacheUpdate() {
+  return cacheData.main.lastUpdated || "Belum ada cache";
 }
 
 export { getCachedData };

@@ -1,8 +1,5 @@
-// master.js
-
 import { config } from './config.js';
-import { getCachedData } from './cache.js';
-
+import { getCachedData, getLastCacheUpdate } from './cache.js';
 
 export async function searchDatabase(query) {
   const sheetId = config.SPREADSHEET_ID;
@@ -21,10 +18,13 @@ export async function searchDatabase(query) {
 
   if (results.length === 0) return `Kata kunci: <code>${query}</code>\nTidak ada hasil yang ditemukan.`;
 
-  const header = `Bot Usage 🟡🔴🔵🟠🟡\n<pre>📌 Kata Kunci: <code>${query}</code></pre>`;
+  const header = `📌 Kata Kunci: <code>${query}</code>`;
   const formattedResults = results.map(row =>
     `<blockquote>➤${row[0]} • <code>${row[1]}</code> • ${row[2]} • ${row[3]} • ${row[4]}</blockquote>`
   ).join("\n");
 
-  return `${header}\n\n${formattedResults}`;
+  const lastCacheUpdate = getLastCacheUpdate();
+  const footer = `\n\n🕒 Cache terakhir diperbarui: <code>${lastCacheUpdate}</code>`;
+
+  return `${header}\n\n${formattedResults}${footer}`;
 }
