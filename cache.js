@@ -1,0 +1,52 @@
+import { config } from "./config.js";
+const SPREADSHEET_ID = config.SPREADSHEET_ID;
+const GOOGLE_API_KEY = config.GOOGLE_API_KEY;
+
+
+const CACHE_EXPIRY = 43200; // 12 jam dalam detik
+let cacheData = {
+  main: { data: null, timestamp: 0 },
+};
+
+async function getCachedData(sheetId, range, cacheKey, apiKey) {
+  const now = Math.floor(Date.now() / 1000);
+
+  // Jika cache masih berlaku, gunakan data dari cache
+  if (cacheData[cacheKey].data && now - cacheData[cacheKey].timestamp < CACHE_EXPIRY) {
+    console.log(`✅ Menggunakan cache untuk ${cacheKey}`);
+    return cacheData[cacheKey].data;
+  }
+
+  // Jika cache kosong atau kedaluwarsa, ambil dari Google Sheets
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("Gagal mengambil data dari Google Sheets");
+    const json = await res.json();
+    
+    if (!json.values) {
+      console.log("⚠️ Data dari Google Sheets kosong");
+      return [];
+    }
+
+    // Simpan data ke cache
+    cacheData[cacheKey] = {
+      data: json.values,
+      timestamp: now,
+    };
+
+    console.log(`🔄 Cache diperbarui untuk ${cacheKey}`);
+    return json.values;
+  } catch (error) {
+    console.error(`❌ Error saat mengambil data: ${error.message}`);
+    return [];
+  }
+}
+
+// Fungsi untuk mereset cache
+export function resetCache() {
+  cacheData = { main: { data: null, timestamp: 0 } };
+  console.log("♻️ Cache berhasil di-reset.");
+}
+
+export { getCachedData };

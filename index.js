@@ -1,9 +1,9 @@
 import { searchDatabase } from './master.js';
 import { searchInout } from './inout.js';
+import { resetCache } from './cache.js';
 import { config } from './config.js';
 import { sendLog } from './log.js';
 import { deleteMessage } from './delete.js';
-
 
 const token = config.TOKEN;
 const webhookUrl = config.WEBHOOK_URL;
@@ -22,8 +22,7 @@ export default {
       const chatId = update.message?.chat?.id;
       const text = update.message?.text;
       const messageId = update.message?.message_id;
-	  const username = update.message?.from?.username || update.message?.from?.first_name || "Unknown";
-      //const username = update.message?.from?.username || "Unknown";
+      const username = update.message?.from?.username || update.message?.from?.first_name || "Unknown";
 
       if (!chatId || !text || !messageId) {
         return new Response('Invalid request', { status: 400 });
@@ -31,28 +30,34 @@ export default {
 
       // Handle /start command with Source Code button
       if (text.startsWith('/start')) {
-        await sendMessageWithButton(chatId, '✅ Bot Aktif dan Siap Digunakan!\nBot berjalan di serverles cloudflare \nby', token);
+        await sendMessageWithButton(chatId, '✅ Bot Aktif dan Siap Digunakan!\nBot berjalan di serverless Cloudflare.\nby', token);
         return new Response('Start command handled', { status: 200 });
+      }
+
+      // Handle /reset command to reset cache
+      if (text === '/reset') {
+        resetCache();
+        await sendMessage(chatId, '♻️ Seluruh cache berhasil di-reset!', token);
+        return new Response('Cache reset command handled', { status: 200 });
       }
 
       let responseText;
       if (text.startsWith('.')) {
         const query = text.substring(1).trim();
-		responseText =query ? await searchInout(query)  :  "Tidak bisa tanpa kata kunci";
-		//responseText = await searchInout(text.substring(1).trim());
+        responseText = query ? await searchInout(query) : "Tidak bisa tanpa kata kunci";
       } else {
         responseText = await searchDatabase(text);
       }
-      
+
       if (!responseText) {
         responseText = `Kata kunci: <code>${text}</code>\nTidak ada hasil yang ditemukan.`;
       }
-	  
-	  setTimeout(async () => {
-        await deleteMessage(chatId, messageId, token);
-      }, 6); // Menghapus pesan setelah 5 detik
 
-      // Log the user query
+      setTimeout(async () => {
+        await deleteMessage(chatId, messageId, token);
+      }, 6); // Menghapus pesan setelah 6 detik
+
+      // Log user query
       await sendLog(username, text);
 
       let botMessage;
@@ -82,7 +87,7 @@ async function sendMessageWithButton(chatId, text, token) {
           { text: "📜 Source Code", url: "https://github.com/Syuhadak27/spreadsheet-read-bot-telegram/tree/cloudflare" }
         ],
         [
-          { text: "👨‍ Owner", url: "https://t.me/AlfiSyuhadak" },
+          { text: "👨‍💻 Owner", url: "https://t.me/AlfiSyuhadak" },
           { text: "📢 Channel", url: "https://t.me/dumbzzz" }
         ]
       ]
@@ -97,7 +102,6 @@ async function sendMessageWithButton(chatId, text, token) {
 
   return response.ok ? await response.json() : null;
 }
-
 
 // Function to send a regular message
 async function sendMessage(chatId, text, token) {
