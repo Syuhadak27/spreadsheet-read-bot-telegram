@@ -16,37 +16,52 @@ export async function searchInout(query) {
     if (!json.values) return null;
 
     const keywords = query.toLowerCase().split(" ").map(k => k.trim());
-    const results = json.values.filter(row =>
+    const filteredData = json.values.filter(row =>
       keywords.every(keyword => row.some(cell => String(cell).toLowerCase().includes(keyword)))
     );
 
-    if (results.length === 0) return null;
+    if (filteredData.length === 0) return null;
 
     let totalMasuk = 0;
     let totalKeluar = 0;
+    let sumByName = {};
 
     // Proses hasil pencarian
-    const formattedResults = results.map(row => {
+    const formattedResults = filteredData.map(row => {
       let formattedDate = row[0];
 
       // Ekstrak angka dari kolom 4 (Masuk) dan kolom 5 (Keluar)
-      let masuk = parseInt(row[3].replace(/\D/g, ""), 10) || 0; // Hapus semua non-angka
-      let keluar = parseInt(row[4].replace(/\D/g, ""), 10) || 0;
+      let masuk = parseInt(row[3]?.replace(/\D/g, ""), 10) || 0;
+      let keluar = parseInt(row[4]?.replace(/\D/g, ""), 10) || 0;
+      let name = row[5]?.trim() || "Tanpa Nama"; // Kolom 6 (Nama)
 
       // Tambahkan ke total
       totalMasuk += masuk;
       totalKeluar += keluar;
 
-      return `<blockquote>${formattedDate} • <code>${row[1]}</code> • ${row[2]} • ${row[3]} • ${row[4]} • ${row[5]}</blockquote>`;
+      // SUMIF berdasarkan nama
+      sumByName[name] = (sumByName[name] || 0) + keluar;
+
+      return `<blockquote>${formattedDate} • <code>${row[1]}</code> • ${row[2]} • ${masuk} pcs • ${keluar} pcs • ${name}</blockquote>`;
     }).join("\n");
 
     // Hitung sisa stok
     const totalTersisa = totalMasuk - totalKeluar;
 
-    // Buat header dengan total masuk, keluar, dan sisa
-    const header = `<pre>🟢 Masuk -- ${totalMasuk} pcs\n🔴 Keluar -- ${totalKeluar} pcs</pre>\n<blockquote>💥 Tersisa -- ${totalTersisa} pcs</blockquote>\n\n`;
+    // Buat format SUMIF berdasarkan nama
+    const sumByNameText = Object.entries(sumByName)
+      .map(([name, total]) => `${name}: ${total} pcs`)
+      .join(" • ");
 
-    return header + formattedResults;
+    // Buat header dengan total masuk, keluar, dan sisa
+    let response = `<pre>Kata Kunci: <code>${query}</code></pre>\n`;
+    response += `<pre>🟢 Masuk -- ${totalMasuk} pcs\n🔴 Keluar -- ${totalKeluar} pcs\n🟡 Tersisa -- ${totalTersisa} pcs</pre>\n\n`;
+    
+    if (sumByNameText) {
+      response += `📊 Jumlah berdasarkan Nama:\n<blockquote>${sumByNameText}</blockquote>\n\n`;
+    }
+
+    return response + formattedResults;
   } catch (error) {
     console.error(error);
     return null;
