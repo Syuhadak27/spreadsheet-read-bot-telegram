@@ -53,10 +53,11 @@ export function getLastCacheUpdateInout() {
 
 
 
-import { resetCacheUtama } from "./cache.js";
+import { resetCacheUtama, resetCache } from "./cache.js";
 
 export function resetAllCache() {
   resetCacheInout();
+  resetCache();
   resetCacheUtama();
   console.log("♻️ Semua cache telah direset");
 }

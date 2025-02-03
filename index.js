@@ -157,3 +157,25 @@ async function sendMessage(chatId, text, token) {
 
   return response.ok ? await response.json() : null;
 }
+
+async function splitAndSend(chatId, text, token) {
+  const maxLength = 4000;
+  const messages = [];
+
+  while (text.length > maxLength) {
+    let splitAt = text.lastIndexOf("</blockquote>", maxLength);
+    if (splitAt === -1) splitAt = text.lastIndexOf(" ", maxLength);
+    if (splitAt === -1) splitAt = maxLength;
+
+    const part = text.substring(0, splitAt + "</blockquote>".length);
+    messages.push(part);
+
+    text = text.substring(splitAt + "</blockquote>".length).trim();
+  }
+
+  if (text.length > 0) messages.push(text);
+
+  for (const msg of messages) {
+    await sendMessage(chatId, msg, token);
+  }
+}

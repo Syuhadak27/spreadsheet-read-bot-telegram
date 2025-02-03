@@ -3,32 +3,33 @@ let cacheData = {
   main: { data: null, timestamp: 0, lastUpdated: null },
 };
 
+// Fungsi mengambil data dari cache atau Google Sheets
 async function getCachedData(sheetId, range, cacheKey, apiKey) {
   const now = Math.floor(Date.now() / 1000);
 
-  // Jika cache masih berlaku, gunakan data dari cache
-  if (cacheData[cacheKey].data && now - cacheData[cacheKey].timestamp < CACHE_EXPIRY) {
+  // Cek apakah cache masih berlaku
+  if (cacheData[cacheKey]?.data && now - cacheData[cacheKey].timestamp < CACHE_EXPIRY) {
     console.log(`✅ Menggunakan cache untuk ${cacheKey}`);
     return cacheData[cacheKey].data;
   }
 
-  // Jika cache kosong atau kedaluwarsa, ambil dari Google Sheets
+  // Jika cache kosong atau kadaluwarsa, ambil ulang dari Google Sheets
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`;
   try {
     const res = await fetch(url);
     if (!res.ok) throw new Error("Gagal mengambil data dari Google Sheets");
     const json = await res.json();
-    
+
     if (!json.values) {
-      console.log("⚠️ Data dari Google Sheets kosong");
+      console.log(`⚠️ Data dari Google Sheets kosong untuk ${cacheKey}`);
       return [];
     }
 
-    // Simpan data ke cache dengan timestamp terbaru
+    // Simpan ke cache
     cacheData[cacheKey] = {
       data: json.values,
       timestamp: now,
-      lastUpdated: new Date().toLocaleString("id-ID", { timeZone: "Asia/Jakarta" }), // Simpan waktu dalam format lokal
+      lastUpdated: new Date().toLocaleString("id-ID", { timeZone: "Asia/Jakarta" }),
     };
 
     console.log(`🔄 Cache diperbarui untuk ${cacheKey} pada ${cacheData[cacheKey].lastUpdated}`);
@@ -39,28 +40,19 @@ async function getCachedData(sheetId, range, cacheKey, apiKey) {
   }
 }
 
-
-
-// Fungsi reset cache
-export function resetCacheUtama() {
-  cacheData = { main: { data: null, timestamp: 0, lastUpdated: null } };
-  
-  // Reset cache inout dari cache_inout.js
-  import("./cache_inout.js").then(({ default: cacheInout }) => {
-    cacheInout.data = null;
-    cacheInout.timestamp = 0;
-    cacheInout.lastUpdated = null;
-    console.log("♻️ Cache Inout berhasil di-reset.");
-  });
-
-  console.log("♻️ Cache utama berhasil di-reset.");
-}
-
-export { cacheData };
-
 // Fungsi untuk mendapatkan timestamp terakhir cache diperbarui
-export function getLastCacheUpdate() {
+function getLastCacheUpdate() {
   return cacheData.main.lastUpdated || "Belum ada cache";
 }
 
-export { getCachedData };
+export { getCachedData, getLastCacheUpdate };
+
+// Fungsi reset cache
+export function resetCache() {
+  cacheData = { main: { data: null, timestamp: 0, lastUpdated: null } };
+  console.log("♻️ Cache berhasil di-reset.");
+}
+export function resetCacheUtama() {
+  cacheData.main = { data: null, timestamp: 0, lastUpdated: null };
+  console.log("♻️ Cache utama berhasil di-reset.");
+}
