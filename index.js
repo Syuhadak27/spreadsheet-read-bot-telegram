@@ -30,7 +30,7 @@ export default {
 
       // Handle /start command with Source Code button
       if (text.startsWith('/start')) {
-        await sendMessageWithButton(chatId, '✅ Bot Aktif dan Siap Digunakan!\nBot berjalan di serverless Cloudflare.\nby', token);
+        await sendMessageWithButton(chatId, '✅ Bot Aktif dan Siap Digunakan!\nBot berjalan di serverless Cloudflare.\nBot ini menggunakan cache selama 12jam agar lebih responsif 🥱🥱🥱', token);
         return new Response('Start command handled', { status: 200 });
       }
 

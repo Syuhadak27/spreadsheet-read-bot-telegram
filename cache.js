@@ -39,11 +39,24 @@ async function getCachedData(sheetId, range, cacheKey, apiKey) {
   }
 }
 
-// Fungsi untuk mereset cache
+
+
+// Fungsi reset cache
 export function resetCache() {
   cacheData = { main: { data: null, timestamp: 0, lastUpdated: null } };
-  console.log("♻️ Cache berhasil di-reset.");
+  
+  // Reset cache inout dari cache_inout.js
+  import("./cache_inout.js").then(({ default: cacheInout }) => {
+    cacheInout.data = null;
+    cacheInout.timestamp = 0;
+    cacheInout.lastUpdated = null;
+    console.log("♻️ Cache Inout berhasil di-reset.");
+  });
+
+  console.log("♻️ Cache utama berhasil di-reset.");
 }
+
+export { cacheData };
 
 // Fungsi untuk mendapatkan timestamp terakhir cache diperbarui
 export function getLastCacheUpdate() {
