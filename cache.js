@@ -42,7 +42,7 @@ async function getCachedData(sheetId, range, cacheKey, apiKey) {
 
 
 // Fungsi reset cache
-export function resetCache() {
+export function resetCacheUtama() {
   cacheData = { main: { data: null, timestamp: 0, lastUpdated: null } };
   
   // Reset cache inout dari cache_inout.js
