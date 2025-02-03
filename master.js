@@ -21,7 +21,7 @@ export async function searchDatabase(query) {
 
   if (results.length === 0) return `Kata kunci: <code>${query}</code>\nTidak ada hasil yang ditemukan.`;
 
-  const header = `📌 Kata Kunci: <code>${query}</code>`;
+  const header = `Bot Usage 🟡🔴🔵🟠🟡\n<pre>📌 Kata Kunci: <code>${query}</code></pre>`;
   const formattedResults = results.map(row =>
     `<blockquote>➤${row[0]} • <code>${row[1]}</code> • ${row[2]} • ${row[3]} • ${row[4]}</blockquote>`
   ).join("\n");

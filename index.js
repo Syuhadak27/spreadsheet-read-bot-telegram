@@ -55,7 +55,7 @@ export default {
 
       setTimeout(async () => {
         await deleteMessage(chatId, messageId, token);
-      }, 6); // Menghapus pesan setelah 6 detik
+      }, 10); // Menghapus pesan setelah 6 detik
 
       // Log user query
       await sendLog(username, text);

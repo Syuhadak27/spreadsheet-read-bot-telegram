@@ -42,7 +42,8 @@ export async function searchInout(query) {
       // SUMIF berdasarkan nama
       sumByName[name] = (sumByName[name] || 0) + keluar;
 
-      return `<blockquote>${formattedDate} • <code>${row[1]}</code> • ${row[2]} • ${masuk} pcs • ${keluar} pcs • ${name}</blockquote>`;
+      //return `<blockquote>${formattedDate} • <code>${row[1]}</code> • ${row[2]} • ${masuk} pcs • ${keluar} pcs • ${name}</blockquote>`;
+      return `<blockquote>${formattedDate} • <code>${row[1]}</code> • ${row[2]} • ${row[3]} pcs • ${row[4]} pcs • ${name}</blockquote>`;
     }).join("\n");
 
     // Hitung sisa stok
@@ -55,10 +56,10 @@ export async function searchInout(query) {
 
     // Buat header dengan total masuk, keluar, dan sisa
     let response = `<pre>Kata Kunci: <code>${query}</code></pre>\n`;
-    response += `<pre>🟢 Masuk -- ${totalMasuk} pcs\n🔴 Keluar -- ${totalKeluar} pcs\n🟡 Tersisa -- ${totalTersisa} pcs</pre>\n\n`;
+    response += `<pre>🟢 Masuk -- ${totalMasuk} pcs\n🔴 Keluar -- ${totalKeluar} pcs\n🟡 Tersisa -- ${totalTersisa} pcs</pre>`;
     
     if (sumByNameText) {
-      response += `📊 Jumlah berdasarkan Nama:\n<blockquote>${sumByNameText}</blockquote>\n\n`;
+      response += `📊 Statistik Barang\n<blockquote>${sumByNameText}</blockquote>\n\n`;
     }
 
     return response + formattedResults;

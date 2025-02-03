@@ -13,9 +13,9 @@ export async function sendLog(username, query) {
 
 console.log(`${date} ${time}`);
   const logMessage =// `<blockquote><b>📌 Log Pencarian</b>\n` +
-                     `<blockquote><b>👤 User:</b> @${username}\n` +
-                     `<b>📅 Tanggal:</b> ${date} ${time}\n` +
-                     `<b>🔍 Pencarian:</b> <code>${query}</code></blockquote>`;
+                     `<blockquote><b>👤</b> @${username}\n` +
+                     `<b>📅</b> ${date} ${time}\n` +
+                     `<b>🔍</b> <code>${query}</code></blockquote>`;
 
   await sendMessage(LOG_CHANNEL_ID, logMessage);
 }
