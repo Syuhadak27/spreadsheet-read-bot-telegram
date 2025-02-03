@@ -6,10 +6,10 @@ import { sendLog } from './log.js';
 import { deleteMessage } from './delete.js';
 import { isUserMember } from './fsub.js';
 const resetCache = resetAllCache;
-
 const token = config.TOKEN;
 const webhookUrl = config.WEBHOOK_URL;
-const channelId = config.CHANNEL_ID; // ambil dari config
+const channelId = config.CHANNEL_ID; 
+const CHANNEL_USERNAME = config.CHANNEL_USERNAME;
 
 export default {
   async fetch(request, env) {
@@ -96,7 +96,7 @@ async function sendMessageWithJoinButton(chatId, text, token) {
     reply_markup: JSON.stringify({
       inline_keyboard: [
         [
-          { text: "📢 Bergabung dengan Channel", url: "https://t.me/dumbzzz" }
+          { text: "📢 Bergabung dengan Channel", url: `https://t.me/${CHANNEL_USERNAME}` }
         ]
       ]
     })
@@ -125,7 +125,7 @@ async function sendMessageWithButton(chatId, text, token) {
         ],
         [
           { text: "👨‍💻 Owner", url: "https://t.me/AlfiSyuhadak" },
-          { text: "📢 Channel", url: "https://t.me/dumbzzz" }
+          { text: "📢 Channel", url: `https://t.me/${CHANNEL_USERNAME}` }
         ]
       ]
     })
