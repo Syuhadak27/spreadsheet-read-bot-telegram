@@ -9,6 +9,8 @@ export async function searchDatabase(query) {
   if (!data || data.length === 0) {
     return `Kata kunci: <code>${query}</code>\nTidak ada hasil yang ditemukan.`;
   }
+// batas atas
+  const asciiArt = `\n<pre>••••••••••••Kata kunci itu tidak ada••••••••••\n••••••••••••🥱🥱🥱••••••••••••••••••••••\n••••••••••••••🤣🤣🤣🤣•••••••••••••••••</pre>`;
 
   // Pencarian dengan kata kunci
   const keywords = query.toLowerCase().split(" ").map(k => k.trim());
@@ -16,7 +18,7 @@ export async function searchDatabase(query) {
     keywords.every(keyword => row.some(cell => String(cell).toLowerCase().includes(keyword)))
   );
 
-  if (results.length === 0) return `Kata kunci: <code>${query}</code>\nTidak ada hasil yang ditemukan.`;
+  if (results.length === 0) return `Kata kunci: <code>${query}</code>\n${asciiArt}`;
 
   const header = `📌 Kata Kunci: <code>${query}</code>`;
   const formattedResults = results.map(row =>
