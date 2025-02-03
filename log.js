@@ -1,7 +1,24 @@
 import { config } from "./config.js";
 
 const BOT_TOKEN = config.TOKEN;
-const LOG_CHANNEL_ID = config.LOG_CHANNEL_ID; // ID channel log Telegram (gunakan format negatif, misal: -1001234567890)
+const LOG_CHANNEL_ID = config.LOG_CHANNEL_ID; // ID channel log Telegram
+
+// Fungsi untuk mendapatkan informasi bot
+async function getBotInfo() {
+  const url = `https://api.telegram.org/bot${BOT_TOKEN}/getMe`;
+  const response = await fetch(url);
+  const data = await response.json();
+  
+  if (data.ok) {
+    return {
+      username: data.result.username, // Username bot (tanpa @)
+      displayName: data.result.first_name // Nama tampilan bot
+    };
+  } else {
+    console.error("Gagal mengambil info bot:", data);
+    return { username: "Unknown", displayName: "Unknown" };
+  }
+}
 
 export async function sendLog(username, query) {
   // Konversi waktu ke GMT+7
@@ -11,11 +28,15 @@ export async function sendLog(username, query) {
   const date = `${day}-${month}-${year}`;
   const time = now.toLocaleTimeString("id-ID", options);
 
-console.log(`${date} ${time}`);
-  const logMessage =// `<blockquote><b>📌 Log Pencarian</b>\n` +
-                     `<blockquote><b>👤</b> @${username}\n` +
+  // Ambil info bot
+  const botInfo = await getBotInfo();
+
+  console.log(`${date} ${time}`);
+  const logMessage = `<blockquote><b>📌 Log Pencarian</b>\n` +
+                     `<b>👤 User:</b> @${username}\n` +
                      `<b>📅</b> ${date} ${time}\n` +
-                     `<b>🔍</b> <code>${query}</code></blockquote>`;
+                     `<b>🔍</b> <code>${query}</code></blockquote>\n\n` +
+                     `<i>🤖 Bot: ${botInfo.displayName}</i> (@${botInfo.username})\n` // Menampilkan username dan display name bot;
 
   await sendMessage(LOG_CHANNEL_ID, logMessage);
 }
