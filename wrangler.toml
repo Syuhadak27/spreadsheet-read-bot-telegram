@@ -1,0 +1,12 @@
+name = "cari"
+type = "javascript"
+account_id = "3d07b0c378375dcdc1110ebae9ed92d2"
+workers_dev = true
+
+[env.production]
+kv_namespaces = [
+  { binding = "DATABASE_CACHE", id = "af82f6e68b0b4996b6dc5d38e7d5406e" }
+]
+
+[vars]
+SHEETS_URL = "https://docs.google.com/spreadsheets/d/1yQNzPZo0Q5RxracA6723xnNRd0Pk48iXxqi1I-qA8Mg/edit?usp=drivesdk"

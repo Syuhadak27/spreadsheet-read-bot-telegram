@@ -19,6 +19,7 @@ export async function searchDatabase(query) {
   );
 
   if (results.length === 0) return `<pre><s>Kata kunci: <code>${query}</code></s></pre>\n${asciiArt}`;
+  
 
   const header = `📌 Kata Kunci: <code>${query}</code>`;
   const formattedResults = results.map(row =>

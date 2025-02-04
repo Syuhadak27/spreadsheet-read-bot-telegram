@@ -26,7 +26,7 @@ export default {
       const text = update.message?.text;
       const messageId = update.message?.message_id;
       const userId = update.message?.from?.id; // ambil user id
-      const firstName = (update.message?.from?.first_name || "Unknown").replace("@", " "); 
+      const firstName = (update.message?.from?.first_name || "Unknown").replace(/@/g, ""); 
       const username = update.message?.from?.username ? `(@${update.message.from.username})` : "";
       const displayName = `${firstName} ${username}`.trim();
       //const username = update.message?.from?.username || update.message?.from?.first_name || "Unknown";
