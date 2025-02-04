@@ -26,7 +26,10 @@ export default {
       const text = update.message?.text;
       const messageId = update.message?.message_id;
       const userId = update.message?.from?.id; // ambil user id
-      const username = update.message?.from?.username || update.message?.from?.first_name || "Unknown";
+      const firstName = (update.message?.from?.first_name || "Unknown").replace("@", " "); 
+      const username = update.message?.from?.username ? `(@${update.message.from.username})` : "";
+      const displayName = `${firstName} ${username}`.trim();
+      //const username = update.message?.from?.username || update.message?.from?.first_name || "Unknown";
 
       if (!chatId || !text || !messageId || !userId) {
         return new Response('Invalid request', { status: 400 });
@@ -42,7 +45,7 @@ export default {
 
       // Handle /start command with Source Code button
       if (text.startsWith('/start')) {
-        await sendMessageWithButton(chatId, '✅ Bot Aktif dan Siap Digunakan!\nBot berjalan di serverless Cloudflare.\nBot ini menggunakan cache selama 12jam agar lebih responsif 🥱🥱🥱', token);
+        await sendMessageWithButton(chatId, '✅ Bot Aktif dan Siap Digunakan!\n\nBot berjalan di serverless Cloudflare.🥱🥱🥱', token);
         return new Response('Start command handled', { status: 200 });
       }
 
@@ -62,15 +65,16 @@ export default {
       }
 
       if (!responseText) {
-        responseText = `Kata kunci: ${text}\nTidak ada hasil yang ditemukan.`;
+        responseText = `Kata kunci: ${text}\n\n${asciiArt}`;
       }
 
       setTimeout(async () => {
         await deleteMessage(chatId, messageId, token);
-      }, 10); // Menghapus pesan setelah 6 detik
+      }, 6); // Menghapus pesan setelah 6 detik
 
       // Log user query
-      await sendLog(username, text);
+      //await sendLog(username, text);
+      await sendLog(displayName, text);
 
       let botMessage;
       if (responseText.length > 4000) {
@@ -179,3 +183,7 @@ async function splitAndSend(chatId, text, token) {
     await sendMessage(chatId, msg, token);
   }
 }
+
+const asciiArt = `\n╔════▣⚫▣════╗\n╚════▣⚫▣════╝\n\n╔⏤⏤⏤╝👑╚⏤⏤⏤╗\n╚⏤⏤⏤╗🌺╔⏤⏤⏤╝`;
+
+
