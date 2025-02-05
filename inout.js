@@ -62,7 +62,7 @@ export async function searchInout(query, env) {
   response += `<pre>🟢 Masuk   -- ${totalMasuk} pcs\n🔴 Keluar  -- ${totalKeluar} pcs\n🟡 Tersisa -- ${totalTersisa} pcs</pre>`;
   
   if (sumByNameText) {
-    response += `📊 Statistik Barang\n<blockquote>${sumByNameText}</blockquote>\n\n`;
+    response += `📊 Statistik Barang\n<pre>${sumByNameText}</pre>\n\n`;
   }
 
   response += formattedResults;
@@ -161,5 +161,4 @@ export async function resetCacheInout(env) {
 }
 
 
-const asciiArt = `\n╔Data═▣ ❌ ▣═Tidak═╗
-╚════▣ADA▣═════╝\n\n╔⏤⏤⏤╝👑╚⏤⏤⏤╗\n╚⏤⏤⏤╗🌺╔⏤⏤⏤╝`;
+const asciiArt = `\n╔Data═▣ ❌ ▣═Tidak═╗\n╚════▣ADA▣═════╝\n\n╔⏤⏤⏤╝👑╚⏤⏤⏤╗\n╚⏤⏤⏤╗🌺╔⏤⏤⏤╝`;

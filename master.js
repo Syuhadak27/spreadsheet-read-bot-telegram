@@ -76,7 +76,9 @@ export async function searchDatabase(query, env) {
       return `Kata kunci: <code>${query}</code>\nTidak ada hasil yang ditemukan.`;
     }
 
-    const asciiArt = `\n╔════▣⚫▣════╗\n╚════▣⚫▣════╝\n\n╔⏤⏤⏤╝👑╚⏤⏤⏤╗\n╚⏤⏤⏤╗🌺╔⏤⏤⏤╝`;
+    
+    const asciiArt = `\n╔Data═▣ ❌ ▣═Tidak═╗\n╚════▣ADA▣═════╝\n\n╔⏤⏤⏤╝👑╚⏤⏤⏤╗\n╚⏤⏤⏤╗🌺╔⏤⏤⏤╝`;
+
     const keywords = query.toLowerCase().split(" ").map(k => k.trim());
     
     // Pencarian dalam data
@@ -85,7 +87,7 @@ export async function searchDatabase(query, env) {
     );
 
     if (results.length === 0) {
-      return `<pre><s>Kata kunci: <code>${query}</code></s></pre>\n${asciiArt}`;
+      return `<u>Kata kunci: </u><code>${query}</code>\n${asciiArt}`;
     }
 
     const header = `📌 Kata Kunci: <code>${query}</code>`;
@@ -154,3 +156,4 @@ async function getCachedData(sheetId, range, cacheKey, apiKey) {
     return [];
   }
 }
+
