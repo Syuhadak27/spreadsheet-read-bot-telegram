@@ -9,9 +9,9 @@ const CACHE_EXPIRY = 43200; // 12 jam dalam detik
 const CACHE_KEY = "main"; // Key utama untuk cache di env.DATABASE_CACHE
 
 // Fungsi memuat cache dari KV Database
-async function loadCache() {
+async function loadCache(env) {
   try {
-    const savedCache = await env.DATABASE_CACHE.get(CACHE_KEY, { type: "json" });
+    const savedCache = await env.DATABASE_CACHE.get("cache_key", { type: "json" });
     if (savedCache) {
       console.log("✅ Cache berhasil dimuat dari KV Database.");
       return savedCache;
@@ -19,13 +19,13 @@ async function loadCache() {
   } catch (error) {
     console.error("❌ Gagal memuat cache dari KV:", error);
   }
-  return { data: null, timestamp: 0, lastUpdated: null }; // Jika cache kosong
+  return { data: null, timestamp: 0, lastUpdated: null };
 }
 
 // Fungsi menyimpan cache ke KV Database
-async function saveCache(cacheData) {
+async function saveCache(cacheData, env) {
   try {
-    await env.DATABASE_CACHE.put(CACHE_KEY, JSON.stringify(cacheData), { expirationTtl: CACHE_EXPIRY });
+    await env.DATABASE_CACHE.put("cache_key", JSON.stringify(cacheData), { expirationTtl: 43200 });
     console.log("✅ Cache berhasil disimpan ke KV Database.");
   } catch (error) {
     console.error("❌ Gagal menyimpan cache ke KV:", error);
@@ -79,10 +79,9 @@ function getLastCacheUpdate() {
 }
 
 // Fungsi reset cache utama
-export async function resetCache() {
-  cacheData = { data: null, timestamp: 0, lastUpdated: null };
-  await saveCache(cacheData); // Simpan perubahan ke KV Database
+export async function resetCache(env) {
+  await env.DATABASE_CACHE.delete("cache_key");
   console.log("♻️ Cache berhasil di-reset.");
 }
 
-export { getCachedData, getLastCacheUpdate };
+export { getCachedData, getLastCacheUpdate, saveCache, loadCache };

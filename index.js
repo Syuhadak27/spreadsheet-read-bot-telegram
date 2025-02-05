@@ -5,10 +5,10 @@ import { config } from './config.js';
 import { sendLog } from './log.js';
 import { deleteMessage } from './delete.js';
 import { isUserMember } from './fsub.js';
-const resetCache = resetAllCache;
+
 const token = config.TOKEN;
 const webhookUrl = config.WEBHOOK_URL;
-const channelId = config.CHANNEL_ID; 
+const channelId = config.CHANNEL_ID;
 const CHANNEL_USERNAME = config.CHANNEL_USERNAME;
 
 export default {
@@ -25,33 +25,31 @@ export default {
       const chatId = update.message?.chat?.id;
       const text = update.message?.text;
       const messageId = update.message?.message_id;
-      const userId = update.message?.from?.id; // ambil user id
-      const firstName = (update.message?.from?.first_name || "Unknown").replace(/@/g, ""); 
+      const userId = update.message?.from?.id;
+      const firstName = (update.message?.from?.first_name || "Unknown").replace(/@/g, "");
       const username = update.message?.from?.username ? `(@${update.message.from.username})` : "";
       const displayName = `${firstName} ${username}`.trim();
-      //const username = update.message?.from?.username || update.message?.from?.first_name || "Unknown";
 
       if (!chatId || !text || !messageId || !userId) {
         return new Response('Invalid request', { status: 400 });
       }
 
-      // Pengecekan keanggotaan channel
+      // Cek apakah user sudah join channel
       const isMember = await isUserMember(userId, token, channelId);
       if (!isMember) {
-        // Kirim pesan dengan tombol Join Channel
-        await sendMessageWithJoinButton(chatId, '⚠️ Anda harus bergabung dengan channel terlebih dahulu untuk menggunakan bot ini. Silahkan bergabung dengan channel:', token);
+        await sendMessageWithJoinButton(chatId, '⚠️ Anda harus bergabung dengan channel terlebih dahulu untuk menggunakan bot ini.', token);
         return new Response('User not member', { status: 200 });
       }
 
-      // Handle /start command with Source Code button
+      // Handle /start command
       if (text.startsWith('/start')) {
-        await sendMessageWithButton(chatId, '✅ Bot Aktif dan Siap Digunakan!\n\nBot berjalan di serverless Cloudflare.🥱🥱🥱', token);
+        await sendMessageWithButton(chatId, '✅ Bot Aktif dan Siap Digunakan!\n\nBot berjalan di serverless Cloudflare.', token);
         return new Response('Start command handled', { status: 200 });
       }
 
-      // Handle /reset command to reset cache
+      // Handle /reset command
       if (text === '/reset') {
-        resetCache();
+        await resetAllCache(env); // Pastikan `env` diteruskan
         await sendMessage(chatId, '♻️ Seluruh cache berhasil di-reset!', token);
         return new Response('Cache reset command handled', { status: 200 });
       }
@@ -59,9 +57,9 @@ export default {
       let responseText;
       if (text.startsWith('.')) {
         const query = text.substring(1).trim();
-        responseText = query ? await searchInout(query) : "Tidak bisa tanpa kata kunci";
+        responseText = query ? await searchInout(query, env) : "Tidak bisa tanpa kata kunci";
       } else {
-        responseText = await searchDatabase(text);
+        responseText = await searchDatabase(text, env);
       }
 
       if (!responseText) {
@@ -70,10 +68,8 @@ export default {
 
       setTimeout(async () => {
         await deleteMessage(chatId, messageId, token);
-      }, 6); // Menghapus pesan setelah 6 detik
+      }, 6000);
 
-      // Log user query
-      //await sendLog(username, text);
       await sendLog(displayName, text);
 
       let botMessage;
@@ -90,7 +86,7 @@ export default {
   }
 };
 
-// Function to send a message with Source Code button and Channel join button
+// Fungsi mengirim pesan dengan tombol Join Channel
 async function sendMessageWithJoinButton(chatId, text, token) {
   const url = `https://api.telegram.org/bot${token}/sendMessage`;
   const payload = {
@@ -99,9 +95,7 @@ async function sendMessageWithJoinButton(chatId, text, token) {
     parse_mode: 'HTML',
     reply_markup: JSON.stringify({
       inline_keyboard: [
-        [
-          { text: "📢 Bergabung dengan Channel", url: `https://t.me/${CHANNEL_USERNAME}` }
-        ]
+        [{ text: "📢 Bergabung dengan Channel", url: `https://t.me/${CHANNEL_USERNAME}` }]
       ]
     })
   };
@@ -115,7 +109,7 @@ async function sendMessageWithJoinButton(chatId, text, token) {
   return response.ok ? await response.json() : null;
 }
 
-// Function to send a message with Source Code button and Channel join button for members
+// Fungsi mengirim pesan dengan tombol Source Code
 async function sendMessageWithButton(chatId, text, token) {
   const url = `https://api.telegram.org/bot${token}/sendMessage`;
   const payload = {
@@ -124,13 +118,8 @@ async function sendMessageWithButton(chatId, text, token) {
     parse_mode: 'HTML',
     reply_markup: JSON.stringify({
       inline_keyboard: [
-        [
-          { text: "📜 Source Code", url: "https://github.com/Syuhadak27/spreadsheet-read-bot-telegram/tree/cloudflare" }
-        ],
-        [
-          { text: "👨‍💻 Owner", url: "https://t.me/AlfiSyuhadak" },
-          { text: "📢 Channel", url: `https://t.me/${CHANNEL_USERNAME}` }
-        ]
+        [{ text: "📜 Source Code", url: "https://github.com/Syuhadak27/spreadsheet-read-bot-telegram/tree/cloudflare" }],
+        [{ text: "👨‍💻 Owner", url: "https://t.me/AlfiSyuhadak" }, { text: "📢 Channel", url: `https://t.me/${CHANNEL_USERNAME}` }]
       ]
     })
   };
@@ -144,7 +133,7 @@ async function sendMessageWithButton(chatId, text, token) {
   return response.ok ? await response.json() : null;
 }
 
-// Function to send a regular message
+// Fungsi mengirim pesan biasa
 async function sendMessage(chatId, text, token) {
   const url = `https://api.telegram.org/bot${token}/sendMessage`;
   const payload = {
@@ -162,6 +151,7 @@ async function sendMessage(chatId, text, token) {
   return response.ok ? await response.json() : null;
 }
 
+// Fungsi membagi pesan jika terlalu panjang
 async function splitAndSend(chatId, text, token) {
   const maxLength = 4000;
   const messages = [];
@@ -185,5 +175,3 @@ async function splitAndSend(chatId, text, token) {
 }
 
 const asciiArt = `\n╔════▣⚫▣════╗\n╚════▣⚫▣════╝\n\n╔⏤⏤⏤╝👑╚⏤⏤⏤╗\n╚⏤⏤⏤╗🌺╔⏤⏤⏤╝`;
-
-
