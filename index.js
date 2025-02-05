@@ -7,6 +7,8 @@ import { isUserMember } from './fsub.js';
 import { searchStok } from './stok.js';
 import { resetAllCache } from './reset.js';
 import { helpText } from './help.js';
+import { searchList } from './list.js';
+
 
 const token = config.TOKEN;
 const webhookUrl = config.WEBHOOK_URL;
@@ -69,6 +71,9 @@ export default {
       if (text.startsWith('.stok')) {
         const query = text.substring(5).trim();
         responseText = query ? await searchStok(query) : "⚠️ Tidak bisa tanpa kata kunci.";
+      }else if (text.startsWith('.list')) {
+        const query = text.substring(5).trim();
+        responseText = query ? await searchList(query) : "⚠️ Tidak bisa tanpa kata kunci.";
       } else if (text.startsWith('.')) {
         const query = text.substring(1).trim();
         responseText = query ? await searchInout(query, env) : "⚠️ Tidak bisa tanpa kata kunci.";
