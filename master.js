@@ -1,4 +1,5 @@
 import { config } from './config.js';
+import { asciiArt } from './help.js';
 
 
 // Fungsi untuk menyimpan ke KV
@@ -75,9 +76,6 @@ export async function searchDatabase(query, env) {
     if (!Array.isArray(data) || data.length === 0) {
       return `Kata kunci: <code>${query}</code>\nTidak ada hasil yang ditemukan.`;
     }
-
-    
-    const asciiArt = `\n╔Data═▣ ❌ ▣═Tidak═╗\n╚════▣ADA▣═════╝\n\n╔⏤⏤⏤╝👑╚⏤⏤⏤╗\n╚⏤⏤⏤╗🌺╔⏤⏤⏤╝`;
 
     const keywords = query.toLowerCase().split(" ").map(k => k.trim());
     

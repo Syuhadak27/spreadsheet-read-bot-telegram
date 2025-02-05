@@ -1,4 +1,5 @@
 import { config } from "./config.js";
+import { asciiArt } from './help.js';
 
 
 const SPREADSHEET_ID = config.SPREADSHEET_ID;
@@ -159,6 +160,3 @@ export async function resetCacheInout(env) {
     return "Gagal menghapus cache.";
   }
 }
-
-
-const asciiArt = `\n╔Data═▣ ❌ ▣═Tidak═╗\n╚════▣ADA▣═════╝\n\n╔⏤⏤⏤╝👑╚⏤⏤⏤╗\n╚⏤⏤⏤╗🌺╔⏤⏤⏤╝`;

@@ -1,4 +1,5 @@
 import { config } from "./config.js";
+import { asciiArt } from './help.js';
 
 const SPREADSHEET_ID = config.SPREADSHEET_ID;
 const GOOGLE_API_KEY = config.GOOGLE_API_KEY;
@@ -50,4 +51,4 @@ async function fetchStokData(sheetId, range, apiKey) {
     }
 }
 
-const asciiArt = `\n╔Data═▣ ❌ ▣═Tidak═╗\n╚════▣ADA▣═════╝\n\n╔⏤⏤⏤╝👑╚⏤⏤⏤╗\n╚⏤⏤⏤╗🌺╔⏤⏤⏤╝`;
+

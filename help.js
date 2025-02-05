@@ -13,3 +13,4 @@ export const helpText = `
 
 <i>Stay awesome! 🤘</i>
 `;
+export const asciiArt = `\n╔Data═▣ ❌ ▣═Tidak═╗\n╚════▣ADA▣═════╝\n\n╔⏤⏤⏤╝👑╚⏤⏤⏤╗\n╚⏤⏤⏤╗🌺╔⏤⏤⏤╝`;
