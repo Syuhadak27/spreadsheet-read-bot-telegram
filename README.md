@@ -20,6 +20,27 @@ Rename <code>config-sampel.js</code>    ke <code>config.js</code>
 ••• <code>SPREADSHEET_ID</code> :  id spreadsheet
 
 
+## configurasi KV DATABASE
+
+Buat KV di dasbord cloudflare
+Masuk ke dasbord - Storage & Database -- KV -- create database dg nama <code>DATABASE_CACHE</code>
+
+Lalu edit dit file <code>wrangler.json</code> yg ada di <code>folder root proyek</code> dan tambahkan ini di bawah nya.
+
+```bash 
+"kv_namespaces": [
+    {
+      "binding": "DATABASE_CACHE",
+      "id": "af82f6e68b0b4996b6dc5d38e7d5406e"
+    }
+  ]
+}
+```
+
+
+
+
+
 
 ## <i>requirement deploy dengan Cloudflare CLI via termux</i>
 Karena cloudflare cli tidak support dengan perangkat android, kita gunakan ubuntu di termux, 
