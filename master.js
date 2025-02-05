@@ -120,3 +120,37 @@ async function getLastCacheUpdate(env) {
     return "Tidak diketahui";
   }
 }
+
+export async function resetCacheUtama(env) {
+  if (!env?.DATABASE_CACHE) {
+    console.error("❌ KV Database tidak terkonfigurasi");
+    return "Gagal: KV tidak tersedia.";
+  }
+
+  try {
+    // Hapus cache pencarian dan timestamp
+    await env.DATABASE_CACHE.delete("search_results");
+    await env.DATABASE_CACHE.delete("last_update");
+
+    console.log("✅ Cache berhasil direset.");
+    return "Cache berhasil direset.";
+  } catch (error) {
+    console.error("❌ Gagal mereset cache:", error);
+    return "Gagal mereset cache.";
+  }
+}
+
+
+async function getCachedData(sheetId, range, cacheKey, apiKey) {
+  try {
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+
+    const data = await response.json();
+    return data.values || [];
+  } catch (error) {
+    console.error("❌ Error mengambil data dari Google Sheets:", error);
+    return [];
+  }
+}

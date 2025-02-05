@@ -5,6 +5,7 @@ import { config } from './config.js';
 import { sendLog } from './log.js';
 import { deleteMessage } from './delete.js';
 import { isUserMember } from './fsub.js';
+import { resetCacheUtama } from './master.js';
 
 const token = config.TOKEN;
 const webhookUrl = config.WEBHOOK_URL;
@@ -51,7 +52,8 @@ export default {
 
       // Handle /reset command
       if (text === '/reset') {
-        await resetAllCache(env); // Pastikan `env` diteruskan
+        //await resetAllCache(env); // Pastikan `env` diteruskan
+        await resetCacheUtama(env);
         await sendMessage(chatId, '♻️ Seluruh cache berhasil di-reset!', token);
         return new Response('Cache reset command handled', { status: 200 });
       }
