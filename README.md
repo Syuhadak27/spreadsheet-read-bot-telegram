@@ -23,7 +23,7 @@ Rename <code>config-sampel.js</code>    ke <code>config.js</code>
 ## configurasi KV DATABASE
 
 Buat KV di dasbord cloudflare
-Masuk ke dasbord - Storage & Database -- KV -- create database dg nama <code>DATABASE_CACHE</code>
+Masuk ke dasbord - Storage & Database -- KV -- create database dg nama <code>DATABASE_CACHE</code> lalu copy id nya dan tempelkan disini
 
 Lalu edit dit file <code>wrangler.json</code> yg ada di <code>folder root proyek</code> dan tambahkan ini di bawah nya.
 
@@ -31,7 +31,7 @@ Lalu edit dit file <code>wrangler.json</code> yg ada di <code>folder root proyek
 "kv_namespaces": [
     {
       "binding": "DATABASE_CACHE",
-      "id": "af82f6e68b0b4996b6dc5d38e7d5406e"
+      "id": "ID KV DATABASE"
     }
   ]
 }
