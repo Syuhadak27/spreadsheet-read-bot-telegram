@@ -11,6 +11,8 @@ const webhookUrl = config.WEBHOOK_URL;
 const channelId = config.CHANNEL_ID;
 const CHANNEL_USERNAME = config.CHANNEL_USERNAME;
 
+let globalEnv = null;
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -68,7 +70,7 @@ export default {
 
       setTimeout(async () => {
         await deleteMessage(chatId, messageId, token);
-      }, 6000);
+      }, 6);
 
       await sendLog(displayName, text);
 

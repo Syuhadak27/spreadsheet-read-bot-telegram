@@ -24,11 +24,40 @@ async function loadCache(env) {
 
 // Fungsi menyimpan cache ke KV Database
 async function saveCache(cacheData, env) {
+  console.log("Debug env:", {
+    hasEnv: !!env,
+    hasDatabase: !!env?.DATABASE_CACHE,
+    databaseKeys: env ? Object.keys(env) : []
+  });
+  const cacheKey = "main";
+  
+  // Tambahkan validasi env dan DATABASE_CACHE
+  if (!env || !env.DATABASE_CACHE) {
+    console.error("❌ KV Database tidak terkonfigurasi");
+    return;
+  }
+
+  const cacheValue = JSON.stringify(cacheData);
+
+  // Periksa ukuran data
+  if (new TextEncoder().encode(cacheValue).length > 25 * 1024 * 1024) {
+    console.error("❌ Data terlalu besar untuk disimpan ke KV Database.");
+    return;
+  }
+
   try {
-    await env.DATABASE_CACHE.put("cache_key", JSON.stringify(cacheData), { expirationTtl: 43200 });
+    await env.DATABASE_CACHE.put(cacheKey, cacheValue, { expirationTtl: 43200 });
     console.log("✅ Cache berhasil disimpan ke KV Database.");
   } catch (error) {
     console.error("❌ Gagal menyimpan cache ke KV:", error);
+
+    if (error.message.includes("timeout")) {
+      console.error("⏳ Timeout saat mencoba menyimpan data ke KV.");
+    } else if (error.message.includes("permission")) {
+      console.error("🔒 Izin tidak cukup untuk menyimpan data ke KV.");
+    } else {
+      console.error("🚨 Error tidak diketahui:", error);
+    }
   }
 }
 
