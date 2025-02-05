@@ -30,8 +30,10 @@ export default {
       const messageId = update.message?.message_id;
       const userId = update.message?.from?.id;
       const firstName = (update.message?.from?.first_name || "Unknown").replace(/@/g, "");
-      const username = update.message?.from?.username ? `(@${update.message.from.username})` : "";
-      const displayName = `${firstName} ${username}`.trim();
+      const lastName = update.message?.from?.last_name ? update.message.from.last_name.replace(/@/g, "") : "";
+      const username = update.message?.from?.username ? `(@${update.message.from.username})` : "N/A";
+      const fullName = `${firstName} ${lastName}`.trim();
+      const displayName = `${fullName} ${username}`.trim();
 
       if (!chatId || !text || !messageId || !userId) {
         return new Response('Invalid request', { status: 400 });
@@ -52,10 +54,8 @@ export default {
 
       // Handle /reset command
       if (text === '/reset') {
-        //await resetAllCache(env); // Pastikan `env` diteruskan
-        //await resetCacheUtama(env);
         await resetAllCache(env)
-        await sendMessage(chatId, '♻️ Seluruh cache berhasil di-reset!', token);
+        await sendMessage(chatId, '♻️Cache Utama berhasil di reset!\n💲Cache inout berhasil di reset', token);
         return new Response('Cache reset command handled', { status: 200 });
       }
 
@@ -179,4 +179,5 @@ async function splitAndSend(chatId, text, token) {
   }
 }
 
-const asciiArt = `\n╔════▣⚫▣════╗\n╚════▣⚫▣════╝\n\n╔⏤⏤⏤╝👑╚⏤⏤⏤╗\n╚⏤⏤⏤╗🌺╔⏤⏤⏤╝`;
+const asciiArt = `\n╔Data═▣ ❌ ▣═Tidak═╗
+╚════▣ADA▣═════╝\n\n╔⏤⏤⏤╝👑╚⏤⏤⏤╗\n╚⏤⏤⏤╗🌺╔⏤⏤⏤╝`;

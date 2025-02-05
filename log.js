@@ -1,5 +1,4 @@
 import { config } from "./config.js";
-
 const BOT_TOKEN = config.TOKEN;
 const LOG_CHANNEL_ID = config.LOG_CHANNEL_ID; // ID channel log Telegram
 

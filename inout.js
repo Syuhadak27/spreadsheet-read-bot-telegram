@@ -33,7 +33,7 @@ export async function searchInout(query, env) {
     keywords.every(keyword => row.some(cell => String(cell).toLowerCase().includes(keyword)))
   );
 
-  if (filteredData.length === 0) return `Tidak ada hasil untuk kata kunci: <code>${query}</code>`;
+  if (filteredData.length === 0) return `Kata kunci: <code>${query}</code>\n\n${asciiArt}`;
 
   let totalMasuk = 0;
   let totalKeluar = 0;
@@ -161,3 +161,5 @@ export async function resetCacheInout(env) {
 }
 
 
+const asciiArt = `\n╔Data═▣ ❌ ▣═Tidak═╗
+╚════▣ADA▣═════╝\n\n╔⏤⏤⏤╝👑╚⏤⏤⏤╗\n╚⏤⏤⏤╗🌺╔⏤⏤⏤╝`;
