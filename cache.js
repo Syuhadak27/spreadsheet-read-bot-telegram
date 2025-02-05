@@ -1,27 +1,48 @@
-import { config } from './config.js';
+import { config } from "./config.js";
 
 const SPREADSHEET_ID = config.SPREADSHEET_ID;
 const GOOGLE_API_KEY = config.GOOGLE_API_KEY;
 const sheetId = SPREADSHEET_ID;
 const apiKey = GOOGLE_API_KEY;
 
-
-
-
 const CACHE_EXPIRY = 43200; // 12 jam dalam detik
-let cacheData = {
-  main: { data: null, timestamp: 0, lastUpdated: null },
-};
+const CACHE_KEY = "main"; // Key utama untuk cache di env.DATABASE_CACHE
+
+// Fungsi memuat cache dari KV Database
+async function loadCache() {
+  try {
+    const savedCache = await env.DATABASE_CACHE.get(CACHE_KEY, { type: "json" });
+    if (savedCache) {
+      console.log("✅ Cache berhasil dimuat dari KV Database.");
+      return savedCache;
+    }
+  } catch (error) {
+    console.error("❌ Gagal memuat cache dari KV:", error);
+  }
+  return { data: null, timestamp: 0, lastUpdated: null }; // Jika cache kosong
+}
+
+// Fungsi menyimpan cache ke KV Database
+async function saveCache(cacheData) {
+  try {
+    await env.DATABASE_CACHE.put(CACHE_KEY, JSON.stringify(cacheData), { expirationTtl: CACHE_EXPIRY });
+    console.log("✅ Cache berhasil disimpan ke KV Database.");
+  } catch (error) {
+    console.error("❌ Gagal menyimpan cache ke KV:", error);
+  }
+}
+
+// Panggil `loadCache()` saat aplikasi pertama kali dijalankan
+let cacheData = await loadCache();
 
 // Fungsi mengambil data dari cache atau Google Sheets
 async function getCachedData() {
   const now = Math.floor(Date.now() / 1000);
-  const cacheKey = "main"; // Gunakan cache utama
 
   // Cek apakah cache masih berlaku
-  if (cacheData[cacheKey]?.data && now - cacheData[cacheKey].timestamp < CACHE_EXPIRY) {
-    console.log(`✅ Menggunakan cache utama`);
-    return cacheData[cacheKey].data;
+  if (cacheData?.data && now - cacheData.timestamp < CACHE_EXPIRY) {
+    console.log(`✅ Menggunakan cache dari KV Database.`);
+    return cacheData.data;
   }
 
   // Jika cache kosong atau kadaluwarsa, ambil ulang dari Google Sheets
@@ -37,13 +58,14 @@ async function getCachedData() {
     }
 
     // Simpan ke cache utama
-    cacheData[cacheKey] = {
+    cacheData = {
       data: json.values,
       timestamp: now,
       lastUpdated: new Date().toLocaleString("id-ID", { timeZone: "Asia/Jakarta" }),
     };
 
-    console.log(`🔄 Cache diperbarui pada ${cacheData[cacheKey].lastUpdated}`);
+    await saveCache(cacheData); // Simpan ke KV Database
+    console.log(`🔄 Cache diperbarui pada ${cacheData.lastUpdated}`);
     return json.values;
   } catch (error) {
     console.error(`❌ Error saat mengambil data: ${error.message}`);
@@ -53,12 +75,13 @@ async function getCachedData() {
 
 // Fungsi untuk mendapatkan timestamp terakhir cache diperbarui
 function getLastCacheUpdate() {
-  return cacheData.main.lastUpdated || "Belum ada cache";
+  return cacheData?.lastUpdated || "Belum ada cache";
 }
 
 // Fungsi reset cache utama
-export function resetCache() {
-  cacheData = { main: { data: null, timestamp: 0, lastUpdated: null } };
+export async function resetCache() {
+  cacheData = { data: null, timestamp: 0, lastUpdated: null };
+  await saveCache(cacheData); // Simpan perubahan ke KV Database
   console.log("♻️ Cache berhasil di-reset.");
 }
 

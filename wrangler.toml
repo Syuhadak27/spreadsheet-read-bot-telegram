@@ -10,3 +10,7 @@ kv_namespaces = [
 
 [vars]
 SHEETS_URL = "https://docs.google.com/spreadsheets/d/1yQNzPZo0Q5RxracA6723xnNRd0Pk48iXxqi1I-qA8Mg/edit?usp=drivesdk"
+
+
+main = "src/index.js"  # atau file utama Anda
+compatibility_flags = ["nodejs_compat"]
