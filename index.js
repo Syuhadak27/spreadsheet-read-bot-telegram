@@ -4,8 +4,9 @@ import { config } from './config.js';
 import { sendLog } from './log.js';
 import { deleteMessage } from './delete.js';
 import { isUserMember } from './fsub.js';
-//import { resetCacheUtama } from './master.js';
+import { searchStok } from './stok.js';
 import { resetAllCache } from './reset.js';
+import { helpText } from './help.js';
 
 const token = config.TOKEN;
 const webhookUrl = config.WEBHOOK_URL;
@@ -54,15 +55,23 @@ export default {
 
       // Handle /reset command
       if (text === '/reset') {
-        await resetAllCache(env)
-        await sendMessage(chatId, '♻️Cache Utama berhasil di reset!\n💲Cache inout berhasil di reset', token);
+        await resetAllCache(env);
+        await sendMessage(chatId, '♻️ Cache berhasil di-reset!', token);
         return new Response('Cache reset command handled', { status: 200 });
       }
+      if (text === '/help') {
+        console.log("Perintah /help diterima, mengirim response...");
+        await sendMessage(chatId, helpText, token);
+        return new Response('Help command handled', { status: 200 });
+      }
 
-      let responseText;
-      if (text.startsWith('.')) {
+      let responseText = "";
+      if (text.startsWith('.stok')) {
+        const query = text.substring(5).trim();
+        responseText = query ? await searchStok(query) : "⚠️ Tidak bisa tanpa kata kunci.";
+      } else if (text.startsWith('.')) {
         const query = text.substring(1).trim();
-        responseText = query ? await searchInout(query, env) : "Tidak bisa tanpa kata kunci";
+        responseText = query ? await searchInout(query, env) : "⚠️ Tidak bisa tanpa kata kunci.";
       } else {
         responseText = await searchDatabase(text, env);
       }
@@ -71,17 +80,14 @@ export default {
         responseText = `Kata kunci: ${text}\n\n${asciiArt}`;
       }
 
-      setTimeout(async () => {
-        await deleteMessage(chatId, messageId, token);
-      }, 6);
+      setTimeout(() => deleteMessage(chatId, messageId, token), 4); // 6 detik
 
       await sendLog(displayName, text);
 
-      let botMessage;
       if (responseText.length > 4000) {
-        botMessage = await splitAndSend(chatId, responseText, token);
+        await splitAndSend(chatId, responseText, token);
       } else {
-        botMessage = await sendMessage(chatId, responseText, token);
+        await sendMessage(chatId, responseText, token);
       }
 
       return new Response('Request handled', { status: 200 });
