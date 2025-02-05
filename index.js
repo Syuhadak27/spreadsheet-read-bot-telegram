@@ -1,11 +1,11 @@
 import { searchDatabase } from './master.js';
 import { searchInout } from './inout.js';
-import { resetAllCache } from './cache_inout.js';
 import { config } from './config.js';
 import { sendLog } from './log.js';
 import { deleteMessage } from './delete.js';
 import { isUserMember } from './fsub.js';
-import { resetCacheUtama } from './master.js';
+//import { resetCacheUtama } from './master.js';
+import { resetAllCache } from './reset.js';
 
 const token = config.TOKEN;
 const webhookUrl = config.WEBHOOK_URL;
@@ -53,7 +53,8 @@ export default {
       // Handle /reset command
       if (text === '/reset') {
         //await resetAllCache(env); // Pastikan `env` diteruskan
-        await resetCacheUtama(env);
+        //await resetCacheUtama(env);
+        await resetAllCache(env)
         await sendMessage(chatId, '♻️ Seluruh cache berhasil di-reset!', token);
         return new Response('Cache reset command handled', { status: 200 });
       }
