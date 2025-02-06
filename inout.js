@@ -56,6 +56,8 @@ export async function searchInout(query, env) {
 
   const totalTersisa = totalMasuk - totalKeluar;
   const sumByNameText = Object.entries(sumByName)
+    .filter(([_, total]) => total > 0) // Hanya menyertakan item dengan total > 0
+  //const sumByNameText = Object.entries(sumByName)
     .map(([name, total]) => `${name}: ${total} pcs`)
     .join(" • ");
 

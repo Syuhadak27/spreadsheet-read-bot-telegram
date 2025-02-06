@@ -35,7 +35,7 @@ export async function sendMessageWithButton(chatId, text) {
     parse_mode: 'HTML',
     reply_markup: JSON.stringify({
       inline_keyboard: [
-        [{ text: "📜 Source Code", url: "https://github.com/Syuhadak27/spreadsheet-read-bot-telegram/tree/cloudflare" }],
+        [{ text: "📜 Source Code", url: "https://github.com/Syuhadak27/spreadsheet-read-bot-telegram" }],
         [{ text: "👨‍💻 Owner", url: "https://t.me/AlfiSyuhadak" }, { text: "📢 Channel", url: `https://t.me/${CHANNEL_USERNAME}` }]
       ]
     })
