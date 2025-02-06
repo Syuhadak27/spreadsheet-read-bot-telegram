@@ -6,8 +6,9 @@ export const helpText = `
 1️⃣ <b>/start</b> - Nyalakan bot dan siap-siap untuk mulai! 🚀  
 2️⃣ <b>.stok &lt;KataKunci🗝️&gt;</b> - Cari stok barang yang kamu butuhkan. Gampang banget, tinggal ketik nama barangnya. 📦  
 3️⃣ <b>. &lt;KataKunci🗝️&gt;</b> - Pencarian barang keluar-masuk lewat bot tanpa repot! 🔍  
-4️⃣ <b>/reset</b> - Reset cache bot yang lagi jalan. Pengen mulai fresh? Ini dia! ♻️  
-5️⃣ <b>/help</b> - Biar kamu nggak bingung, ini dia petunjuk lengkap untuk kamu! 😎  
+4️⃣ <b>.list</b> - Melihat daftar harga barang yang tersedia. Cek harga barang dengan mudah! 💸  
+5️⃣ <b>/reset</b> - Reset cache bot yang lagi jalan. Pengen mulai fresh? Ini dia! ♻️  
+6️⃣ <b>/help</b> - Biar kamu nggak bingung, ini dia petunjuk lengkap untuk kamu! 😎  
 
 <b>Selamat berpetualang! 🛸</b>  
 

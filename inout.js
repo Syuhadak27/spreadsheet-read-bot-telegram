@@ -75,11 +75,6 @@ export async function searchInout(query, env) {
   return response;
 }
 
-// Reset cache data
-export async function resetInoutCache(env) {
-  console.log("♻️ Mereset cache inout...");
-  return await resetCacheInout(env);
-}
 
 // Ambil data dari Google Sheets
 async function fetchInoutData(sheetId, range, apiKey) {
@@ -144,19 +139,35 @@ async function getLastCacheUpdateInout(env) {
   }
 }
 
-export async function resetCacheInout(env) {
+export async function resetInoutCache(env) {
   if (!env?.DATABASE_CACHE) {
-    console.error("❌ KV Database tidak dikonfigurasi");
-    return "Gagal: KV tidak dikonfigurasi.";
+    console.error("❌ KV Database tidak terkonfigurasi");
+    return "Gagal: KV tidak tersedia.";
   }
 
   try {
+    // Hapus cache inout dan timestamp
     await env.DATABASE_CACHE.delete("inout_cache");
     await env.DATABASE_CACHE.delete("inout_last_update");
-    console.log("✅ Cache inout berhasil dihapus.");
-    return "✅ Cache inout berhasil direset.";
+
+    console.log("✅ Cache inout berhasil direset.");
+
+    // Ambil data terbaru dari Google Sheets
+    const sheetId = config.SPREADSHEET_ID;
+    const apiKey = config.GOOGLE_API_KEY;
+    const newData = await fetchInoutData(sheetId, "inout!A2:F", apiKey);
+
+    if (Array.isArray(newData) && newData.length > 0) {
+      // Simpan data baru ke cache
+      await saveToKVInout(newData, env);
+      console.log("✅ Data inout berhasil diperbarui ke KV.");
+      return "Cache inout berhasil diperbarui.";
+    } else {
+      console.warn("⚠️ Tidak ada data baru dari Google Sheets.");
+      return "Cache inout direset, tetapi tidak ada data baru.";
+    }
   } catch (error) {
-    console.error("❌ Gagal menghapus cache:", error);
-    return "Gagal menghapus cache.";
+    console.error("❌ Gagal mereset cache inout:", error);
+    return "Gagal mereset cache inout.";
   }
 }

@@ -1,0 +1,92 @@
+import { config } from './config.js';
+
+const token = config.TOKEN;
+const CHANNEL_USERNAME = config.CHANNEL_USERNAME;
+
+// Fungsi mengirim pesan dengan tombol Join Channel
+export async function sendMessageWithJoinButton(chatId, text) {
+  const url = `https://api.telegram.org/bot${token}/sendMessage`;
+  const payload = {
+    chat_id: chatId,
+    text: text,
+    parse_mode: 'HTML',
+    reply_markup: JSON.stringify({
+      inline_keyboard: [
+        [{ text: "📢 Bergabung dengan Channel", url: `https://t.me/${CHANNEL_USERNAME}` }]
+      ]
+    })
+  };
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+
+  return response.ok ? await response.json() : null;
+}
+
+// Fungsi mengirim pesan dengan tombol Source Code
+export async function sendMessageWithButton(chatId, text) {
+  const url = `https://api.telegram.org/bot${token}/sendMessage`;
+  const payload = {
+    chat_id: chatId,
+    text: text,
+    parse_mode: 'HTML',
+    reply_markup: JSON.stringify({
+      inline_keyboard: [
+        [{ text: "📜 Source Code", url: "https://github.com/Syuhadak27/spreadsheet-read-bot-telegram/tree/cloudflare" }],
+        [{ text: "👨‍💻 Owner", url: "https://t.me/AlfiSyuhadak" }, { text: "📢 Channel", url: `https://t.me/${CHANNEL_USERNAME}` }]
+      ]
+    })
+  };
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+
+  return response.ok ? await response.json() : null;
+}
+
+// Fungsi mengirim pesan biasa
+export async function sendMessage(chatId, text) {
+  const url = `https://api.telegram.org/bot${token}/sendMessage`;
+  const payload = {
+    chat_id: chatId,
+    text: text,
+    parse_mode: 'HTML',
+  };
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+
+  return response.ok ? await response.json() : null;
+}
+
+// Fungsi membagi pesan jika terlalu panjang
+export async function splitAndSend(chatId, text) {
+  const maxLength = 4000;
+  const messages = [];
+
+  while (text.length > maxLength) {
+    let splitAt = text.lastIndexOf("</blockquote>", maxLength);
+    if (splitAt === -1) splitAt = text.lastIndexOf(" ", maxLength);
+    if (splitAt === -1) splitAt = maxLength;
+
+    const part = text.substring(0, splitAt + "</blockquote>".length);
+    messages.push(part);
+
+    text = text.substring(splitAt + "</blockquote>".length).trim();
+  }
+
+  if (text.length > 0) messages.push(text);
+
+  for (const msg of messages) {
+    await sendMessage(chatId, msg);
+  }
+}

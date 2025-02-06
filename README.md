@@ -19,6 +19,7 @@ Rename <code>config-sampel.js</code>    ke <code>config.js</code>
 
 ••• <code>SPREADSHEET_ID</code> :  id spreadsheet
 
+••• Untuk mendaftarkan bot ke webhook gunakan endpoint via web browser dengan cara mengunjungi link dari cloudflare seperti ini <code>https://nama.subdomainDariCloudWorker.workers.dev/setWebhook</code>
 
 ## configurasi KV DATABASE
 

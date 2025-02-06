@@ -132,11 +132,24 @@ export async function resetCacheUtama(env) {
     await env.DATABASE_CACHE.delete("search_results");
     await env.DATABASE_CACHE.delete("last_update");
 
-    console.log("✅ Cache berhasil direset.");
-    return "Cache berhasil direset.";
+    console.log("✅ Cache utama berhasil direset.");
+
+    // Ambil data terbaru dari Google Sheets
+    const sheetId = config.SPREADSHEET_ID;
+    const apiKey = config.GOOGLE_API_KEY;
+    const newData = await getCachedData(sheetId, "DATABASE!A2:E", "main", apiKey);
+
+    if (Array.isArray(newData) && newData.length > 0) {
+      await saveToKV(newData, env);
+      console.log("✅ Data utama berhasil diperbarui ke KV.");
+      return "Cache utama berhasil diperbarui.";
+    } else {
+      console.warn("⚠️ Tidak ada data baru dari Google Sheets.");
+      return "Cache utama direset, tetapi tidak ada data baru.";
+    }
   } catch (error) {
-    console.error("❌ Gagal mereset cache:", error);
-    return "Gagal mereset cache.";
+    console.error("❌ Gagal mereset cache utama:", error);
+    return "Gagal mereset cache utama.";
   }
 }
 
