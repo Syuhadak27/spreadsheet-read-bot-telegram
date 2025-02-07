@@ -1,54 +1,59 @@
-import { config } from "./config.js";
+import { config } from './config.js';
 import { asciiArt } from './help.js';
 
-const SPREADSHEET_ID = config.SPREADSHEET_ID;
-const GOOGLE_API_KEY = config.GOOGLE_API_KEY;
-
 export async function searchList(query) {
-    console.log("🔍 Mencari daftar harga di Google Sheets...");
+  try {
+    console.log("🔍 Mengambil data dari Google Sheets...");
 
-    const sheetId = SPREADSHEET_ID;
-    const apiKey = GOOGLE_API_KEY;
-    const range = "list!F2:H"; 
+    const sheetId = config.SPREADSHEET_ID;
+    const apiKey = config.GOOGLE_API_KEY;
 
     // Ambil data dari Google Sheets
-    const jsonValues = await fetchListData(sheetId, range, apiKey);
+    let data;
+    try {
+      data = await getDataFromSheets(sheetId, "list!f2:h", apiKey);
+    } catch (fetchError) {
+      console.error("❌ Gagal mengambil data dari Google Sheets:", fetchError);
+      return `Error: Tidak dapat mengambil data. Silakan coba lagi nanti.`;
+    }
 
-    if (!Array.isArray(jsonValues) || jsonValues.length === 0) {
-        console.warn("⚠️ Tidak ada data yang ditemukan di Google Sheets.");
-        return `❌ Data tidak tersedia.`;
+    if (!Array.isArray(data) || data.length === 0) {
+      return `Kata kunci: <code>${query}</code>\nTidak ada hasil yang ditemukan.`;
     }
 
     const keywords = query.toLowerCase().split(" ").map(k => k.trim());
-    const filteredData = jsonValues.filter(row =>
-        keywords.every(keyword => row.some(cell => String(cell).toLowerCase().includes(keyword)))
+
+    // Pencarian dalam data
+    const results = data.filter(row =>
+      keywords.every(keyword => row.some(cell => String(cell).toLowerCase().includes(keyword)))
     );
 
-    if (filteredData.length === 0) return `Kata kunci: <code>${query}</code>\n\n${asciiArt}`;
-
-    const formattedResults = filteredData.map(row => {
-        return `<pre>🔹${row[0]} • ${row[1]} • ${row[2]}</pre>`;
-    }).join("\n");
-
-    let response = `<b>Kata Kunci:</b> <code>${query}</code>\n\n`;
-    response += formattedResults;
-
-    return response;
-}
-
-// Fungsi mengambil data dari Google Sheets
-async function fetchListData(sheetId, range, apiKey) {
-    try {
-        const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`;
-        const response = await fetch(url);
-        if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
-
-        const data = await response.json();
-        return data.values || [];
-    } catch (error) {
-        console.error("❌ Error mengambil daftar harga dari Google Sheets:", error);
-        return [];
+    if (results.length === 0) {
+      return `<u>Kata kunci: </u><code>${query}</code>\n${asciiArt}`;
     }
+
+    const header = `📌 Kata Kunci: <code>${query}</code>`;
+    const formattedResults = results.map(row =>
+      `<blockquote>${row[0]} • ${row[1]} • ${row[2]} </blockquote>`
+    ).join("\n");
+
+    return `${header}\n\n${formattedResults}`;
+  } catch (error) {
+    console.error("❌ Error dalam pencarian:", error);
+    return `Error: Terjadi kesalahan dalam pencarian. Silakan coba lagi nanti.`;
+  }
 }
 
+async function getDataFromSheets(sheetId, range, apiKey) {
+  try {
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
 
+    const data = await response.json();
+    return data.values || [];
+  } catch (error) {
+    console.error("❌ Error mengambil data dari Google Sheets:", error);
+    return [];
+  }
+}

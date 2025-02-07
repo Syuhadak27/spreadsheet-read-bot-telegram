@@ -6,7 +6,7 @@ import { deleteMessage } from './delete.js';
 import { isUserMember } from './fsub.js';
 import { searchStok } from './stok.js';
 import { resetAllCache } from './reset.js';
-import { helpText } from './help.js';
+import { helpText, asciiArt } from './help.js';
 import { searchList } from './list.js';
 import { setWebhook, unsetWebhook } from './webhook.js';
 import { sendMessage, sendMessageWithButton, sendMessageWithJoinButton, splitAndSend } from './telegram.js';
@@ -67,10 +67,10 @@ export default {
       }
 
       let responseText = "";
-      if (text.startsWith('.stok')) {
+      if (text.startsWith('.stok') || text.startsWith('/stok')) {
         const query = text.substring(5).trim();
         responseText = query ? await searchStok(query) : "⚠️ Tidak bisa tanpa kata kunci.";
-      } else if (text.startsWith('.list')) {
+      } else if (text.startsWith('.list') || text.startsWith('/list')) {
         const query = text.substring(5).trim();
         responseText = query ? await searchList(query) : "⚠️ Tidak bisa tanpa kata kunci.";
       } else if (text.startsWith('.')) {
@@ -79,12 +79,12 @@ export default {
       } else {
         responseText = await searchDatabase(text, env);
       }
-
+      
       if (!responseText) {
         responseText = `Kata kunci: ${text}\n\n${asciiArt}`;
       }
 
-      setTimeout(() => deleteMessage(chatId, messageId, token), 4); // 4 detik
+      setTimeout(() => deleteMessage(chatId, messageId, token), 2); // 4 detik
 
       await sendLog(displayName, text);
 
