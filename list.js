@@ -1,30 +1,39 @@
 import { config } from './config.js';
 import { asciiArt } from './help.js';
 
+const cacheList = {};
+const cacheDuration = 12 * 60 * 60 * 1000; // 12 jam dalam milidetik
+let timestampList = 0;
+
 export async function searchList(query) {
   try {
-    console.log("🔍 Mengambil data dari Google Sheets...");
+    console.log("🔍 Mencari dalam cache atau mengambil dari Google Sheets...");
 
     const sheetId = config.SPREADSHEET_ID;
     const apiKey = config.GOOGLE_API_KEY;
 
-    // Ambil data dari Google Sheets
-    let data;
-    try {
-      data = await getDataFromSheets(sheetId, "list!f2:h", apiKey);
-    } catch (fetchError) {
-      console.error("❌ Gagal mengambil data dari Google Sheets:", fetchError);
-      return `Error: Tidak dapat mengambil data. Silakan coba lagi nanti.`;
+    // Periksa apakah cache masih valid
+    const now = Date.now();
+    if (cacheList.data && now - timestampList < cacheDuration) {
+      console.log("✅ Menggunakan data dari cache.");
+    } else {
+      console.log("🔄 Cache kedaluwarsa, mengambil data baru dari Google Sheets...");
+      try {
+        const data = await getDataFromSheets(sheetId, "list!F2:H", apiKey);
+        if (!Array.isArray(data) || data.length === 0) {
+          return `Kata kunci: <code>${query}</code>\nTidak ada hasil yang ditemukan.`;
+        }
+        cacheList.data = data;
+        timestampList = now; // Perbarui timestamp cache
+      } catch (fetchError) {
+        console.error("❌ Gagal mengambil data dari Google Sheets:", fetchError);
+        return `Error: Tidak dapat mengambil data. Silakan coba lagi nanti.`;
+      }
     }
 
-    if (!Array.isArray(data) || data.length === 0) {
-      return `Kata kunci: <code>${query}</code>\nTidak ada hasil yang ditemukan.`;
-    }
-
+    // Pencarian dalam cache
     const keywords = query.toLowerCase().split(" ").map(k => k.trim());
-
-    // Pencarian dalam data
-    const results = data.filter(row =>
+    const results = cacheList.data.filter(row =>
       keywords.every(keyword => row.some(cell => String(cell).toLowerCase().includes(keyword)))
     );
 
@@ -44,6 +53,7 @@ export async function searchList(query) {
   }
 }
 
+// Fungsi untuk mengambil data dari Google Sheets
 async function getDataFromSheets(sheetId, range, apiKey) {
   try {
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`;
@@ -56,4 +66,11 @@ async function getDataFromSheets(sheetId, range, apiKey) {
     console.error("❌ Error mengambil data dari Google Sheets:", error);
     return [];
   }
+}
+
+// Fungsi untuk mereset cache
+export function resetListCache() {
+  console.log("🔄 List Cache di-reset!");
+  cacheList.data = null;
+  timestampList = 0;
 }
