@@ -9,7 +9,7 @@ import { resetAllCache } from './reset.js';
 import { helpText, asciiArt } from './help.js';
 import { searchList } from './list.js';
 import { setWebhook, unsetWebhook } from './webhook.js';
-import { sendMessage, sendMessageWithButton, sendMessageWithJoinButton, splitAndSend } from './telegram.js';
+import { sendMessage, sendMessageWithButton, sendMessageWithJoinButton, splitAndSend, sendWaButton } from './telegram.js';
 
 
 
@@ -77,10 +77,17 @@ export default {
         responseText = query ? await searchList(query) : "⚠️ Tidak bisa tanpa kata kunci.";
       } else if (text.startsWith('/wa')) {
            let query = text.substring(3).trim();
-           if (query.startsWith('0')) {
-             query = query.replace(/^0+/, '62');
+           if (!query) {
+              responseText = "⚠️ Harap masukkan nomor setelah /wa, contoh: /wa 0827283729";
+           } else {
+               if (query.startsWith('0')) {
+                 query = query.replace(/^0+/, '62');
+               }
+           //responseText = query ? `wa.me/${query}` : 'tidak bisa tanpa nomor';
+                await sendWaButton(chatId, query); // Panggil sendWaButton
+                return new Response('WA button sent', { status: 200 });
            }
-           responseText = query ? `wa.me/${query}` : 'tidak bisa tanpa nomor';
+    
       } else if (text.startsWith('.')) {
         const query = text.substring(1).trim();
         responseText = query ? await searchInout(query, env) : "⚠️ Tidak bisa tanpa kata kunci.";

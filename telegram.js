@@ -91,4 +91,32 @@ export async function splitAndSend(chatId, text) {
   }
 }
 
+export async function sendWaButton(chatId, phoneNumber) {
+    if (!phoneNumber) return;
+
+    const waLink = `https://wa.me/${phoneNumber}`;
+    const url = `https://api.telegram.org/bot${token}/sendMessage`;
+
+    const payload = {
+        chat_id: chatId,
+        text: `Klik tombol di bawah untuk membuka WhatsApp dengan nomor <b>${phoneNumber}</b>:`,
+        parse_mode: 'HTML',
+        reply_markup: {
+            inline_keyboard: [[{ text: "📞 Buka WhatsApp", url: waLink }]]
+        }
+    };
+
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        return await response.json();
+    } catch (error) {
+        console.error("Error mengirim tombol:", error);
+        return null;
+    }
+}
 
