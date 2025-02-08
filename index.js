@@ -11,6 +11,8 @@ import { searchList } from './list.js';
 import { setWebhook, unsetWebhook } from './webhook.js';
 import { sendMessage, sendMessageWithButton, sendMessageWithJoinButton, splitAndSend } from './telegram.js';
 
+
+
 const token = config.TOKEN;
 const channelId = config.CHANNEL_ID;
 
@@ -65,7 +67,7 @@ export default {
         await sendMessage(chatId, helpText);
         return new Response('Help command handled', { status: 200 });
       }
-
+      
       let responseText = "";
       if (text.startsWith('.stok') || text.startsWith('/stok')) {
         const query = text.substring(5).trim();
@@ -73,6 +75,12 @@ export default {
       } else if (text.startsWith('.list') || text.startsWith('/list')) {
         const query = text.substring(5).trim();
         responseText = query ? await searchList(query) : "⚠️ Tidak bisa tanpa kata kunci.";
+      } else if (text.startsWith('/wa')) {
+           let query = text.substring(3).trim();
+           if (query.startsWith('0')) {
+             query = query.replace(/^0+/, '62');
+           }
+           responseText = query ? `wa.me/${query}` : 'tidak bisa tanpa nomor';
       } else if (text.startsWith('.')) {
         const query = text.substring(1).trim();
         responseText = query ? await searchInout(query, env) : "⚠️ Tidak bisa tanpa kata kunci.";
