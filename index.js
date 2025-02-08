@@ -78,10 +78,12 @@ export default {
       } else if (text.startsWith('/wa')) {
            let query = text.substring(3).trim();
            if (!query) {
-              responseText = "⚠️ Harap masukkan nomor setelah /wa, contoh: /wa 0827283729";
+              responseText = "⚠️ Harap masukkan nomor setelah /wa, contoh: /wa 0821234567890 atau /wa +6281234567890";
            } else {
                if (query.startsWith('0')) {
                  query = query.replace(/^0+/, '62');
+               } else if (query.startsWith('+')) {
+                 query = query.replace(/^\+/, '');
                }
            //responseText = query ? `wa.me/${query}` : 'tidak bisa tanpa nomor';
                 await sendWaButton(chatId, query); // Panggil sendWaButton
