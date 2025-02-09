@@ -43,7 +43,7 @@ export async function searchList(query) {
 
     const header = `📌 Kata Kunci: <code>${query}</code>`;
     const formattedResults = results.map(row =>
-      `<blockquote>${row[0]} • ${row[1]} • ${row[2]} </blockquote>`
+      `<blockquote>➣ ${row[0]} • ${row[1]} • ${row[2]} </blockquote>`
     ).join("\n");
 
     return `${header}\n\n${formattedResults}`;
