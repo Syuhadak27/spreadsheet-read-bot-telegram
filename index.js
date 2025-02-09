@@ -6,12 +6,10 @@ import { deleteMessage } from './delete.js';
 import { isUserMember } from './fsub.js';
 import { searchStok } from './stok.js';
 import { resetAllCache } from './reset.js';
-import { helpText, asciiArt } from './help.js';
+import { helpText, asciiArt, startMsg } from './help.js';
 import { searchList } from './list.js';
 import { setWebhook, unsetWebhook } from './webhook.js';
 import { sendMessage, sendMessageWithButton, sendMessageWithJoinButton, splitAndSend, sendWaButton } from './telegram.js';
-
-
 
 const token = config.TOKEN;
 const channelId = config.CHANNEL_ID;
@@ -53,7 +51,7 @@ export default {
 
       // Handle /start command
       if (text.startsWith('/start')) {
-        await sendMessageWithButton(chatId, '✅ Bot Aktif dan Siap Digunakan!\n\nBot berjalan di serverless Cloudflare.');
+        await sendMessageWithButton(chatId, `${startMsg}`);
         return new Response('Start command handled', { status: 200 });
       }
 
@@ -63,7 +61,9 @@ export default {
         await sendMessage(chatId, '♻️ Cache berhasil di-reset!');
         return new Response('Cache reset command handled', { status: 200 });
       }
+
       if (text === '/help') {
+        console.log('Help command received:', chatId);
         await sendMessage(chatId, helpText);
         return new Response('Help command handled', { status: 200 });
       }
@@ -76,20 +76,18 @@ export default {
         const query = text.substring(5).trim();
         responseText = query ? await searchList(query) : "⚠️ Tidak bisa tanpa kata kunci.";
       } else if (text.startsWith('/wa')) {
-           let query = text.substring(3).trim();
-           if (!query) {
-              responseText = "⚠️ Harap masukkan nomor setelah /wa, contoh: /wa 0821234567890 atau /wa +6281234567890";
-           } else {
-               if (query.startsWith('0')) {
-                 query = query.replace(/^0+/, '62');
-               } else if (query.startsWith('+')) {
-                 query = query.replace(/^\+/, '');
-               }
-           //responseText = query ? `wa.me/${query}` : 'tidak bisa tanpa nomor';
-                await sendWaButton(chatId, query); // Panggil sendWaButton
-                return new Response('WA button sent', { status: 200 });
-           }
-    
+        let query = text.substring(3).trim();
+        if (!query) {
+          responseText = "⚠️ Harap masukkan nomor setelah /wa, contoh: /wa 0821234567890 atau /wa +6281234567890";
+        } else {
+          if (query.startsWith('0')) {
+            query = query.replace(/^0+/, '62');
+          } else if (query.startsWith('+')) {
+            query = query.replace(/^\+/, '');
+          }
+          await sendWaButton(chatId, query);
+          return new Response('WA button sent', { status: 200 });
+        }
       } else if (text.startsWith('.')) {
         const query = text.substring(1).trim();
         responseText = query ? await searchInout(query, env) : "⚠️ Tidak bisa tanpa kata kunci.";
@@ -101,15 +99,17 @@ export default {
         responseText = `Kata kunci: ${text}\n\n${asciiArt}`;
       }
 
-      setTimeout(() => deleteMessage(chatId, messageId, token), 2); // 4 detik
+      // Kirim pesan dan ambil ID pesan dari bot
+      const sentMessage = await sendMessage(chatId, responseText);
+      const botMessageId = sentMessage.message_id;
+
+      // Hapus pesan bot setelah 3 detik
+      setTimeout(() => deleteMessage(chatId, botMessageId, token), 3); 
+
+      // Hapus pesan user setelah 4 detik (opsional)
+      setTimeout(() => deleteMessage(chatId, messageId, token), 3);
 
       await sendLog(displayName, text);
-
-      if (responseText.length > 4000) {
-        await splitAndSend(chatId, responseText);
-      } else {
-        await sendMessage(chatId, responseText);
-      }
 
       return new Response('Request handled', { status: 200 });
     }
