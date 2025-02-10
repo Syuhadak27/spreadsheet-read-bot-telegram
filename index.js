@@ -93,19 +93,12 @@ export default {
         responseText = query ? await searchInout(query, env) : "⚠️ Tidak bisa tanpa kata kunci.";
       } else {
         responseText = await searchDatabase(text, env);
+        
       }
       
       if (!responseText) {
         responseText = `Kata kunci: ${text}\n\n${asciiArt}`;
       }
-
-      // Kirim pesan dan ambil ID pesan dari bot
-      const sentMessage = await sendMessage(chatId, responseText);
-      const botMessageId = sentMessage.message_id;
-
-      // Hapus pesan bot setelah 3 detik
-      setTimeout(() => deleteMessage(chatId, botMessageId, token), 3); 
-
       // Hapus pesan user setelah 4 detik (opsional)
       setTimeout(() => deleteMessage(chatId, messageId, token), 3);
 
