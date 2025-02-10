@@ -99,6 +99,13 @@ export default {
       if (!responseText) {
         responseText = `Kata kunci: ${text}\n\n${asciiArt}`;
       }
+
+// Jika teks lebih dari 4096 karakter, gunakan splitAndSend
+      if (responseText.length > 4096) {
+        await splitAndSend(chatId, responseText);
+      } else {
+        await sendMessage(chatId, responseText);
+      }
       // Hapus pesan user setelah 4 detik (opsional)
       setTimeout(() => deleteMessage(chatId, messageId, token), 3);
 
