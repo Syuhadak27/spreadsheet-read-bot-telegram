@@ -51,7 +51,7 @@ export async function searchInout(query, env) {
     totalKeluar += keluar;
     sumByName[name] = (sumByName[name] || 0) + keluar;
 
-    return `<blockquote>${formattedDate} • <code>${row[1]}</code> • ${row[2]} • ${row[3]} pcs • ${row[4]} pcs • ${name}</blockquote>`;
+    return `<blockquote>${formattedDate} • <code>${row[1]}</code> • ${row[2]} • ${row[3]} • ${row[4]} • ${name}</blockquote>`;
   }).join("\n");
 
   const totalTersisa = totalMasuk - totalKeluar;
@@ -62,7 +62,7 @@ export async function searchInout(query, env) {
     .join(" • ");
 
   let response = `<b>Kata Kunci:</b> <code>${query}</code>\n`;
-  response += `<pre>🟢 Masuk   -- ${totalMasuk} pcs\n🔴 Keluar  -- ${totalKeluar} pcs\n🟡 Tersisa -- ${totalTersisa} pcs</pre>`;
+  response += `<pre>🟢 Masuk   -- ${totalMasuk} pcs\n🔴 Keluar  -- <u>${totalKeluar} pcs</u>\n🟡 Tersisa -- ${totalTersisa} pcs</pre>`;
   
   if (sumByNameText) {
     response += `📊 Statistik Barang\n<pre>${sumByNameText}</pre>\n\n`;
