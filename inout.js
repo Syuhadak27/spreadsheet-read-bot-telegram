@@ -117,7 +117,7 @@ export async function saveToKVInout(data, env) {
 
   try {
     await env.DATABASE_CACHE.put("inout_cache", JSON.stringify(data), {
-      expirationTtl: 43200 // 12 jam dalam detik
+      expirationTtl: 86400 // 12 jam dalam detik
     });
     await env.DATABASE_CACHE.put("inout_last_update", Date.now().toString());
     console.log("✅ Data inout berhasil disimpan ke KV");

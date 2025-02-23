@@ -97,7 +97,8 @@ export default {
       }
       
       if (!responseText) {
-        responseText = `Kata kunci: ${text}\n\n${asciiArt}`;
+        //responseText = `Kata kunci: ${text}\n\n${asciiArt}`;
+        responseText = `{asciiArt}`;
       }
 
 // Jika teks lebih dari 4096 karakter, gunakan splitAndSend

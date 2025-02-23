@@ -14,12 +14,12 @@ async function saveToKV(data, env) {
     const timestampKey = "last_update"; // Simpan timestamp update
 
     await env.DATABASE_CACHE.put(cacheKey, JSON.stringify(data), {
-      expirationTtl: 43200 // 12 jam dalam detik
+      expirationTtl: 86400 // 12 jam dalam detik
     });
 
     // Simpan timestamp saat data diperbarui
     await env.DATABASE_CACHE.put(timestampKey, Date.now().toString(), {
-      expirationTtl: 43200
+      expirationTtl: 86400
     });
 
     console.log("✅ Data pencarian berhasil disimpan ke KV");
