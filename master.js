@@ -95,9 +95,11 @@ export async function searchDatabase(query, env, { fullName, username }) {
     }
 
     const header = `📌 Kata Kunci: <code>${query}</code> <i>${randomEmojiName}${fullName} ${username}</i> `;
-    const formattedResults = results.map(row =>
-      `<blockquote>${randomEmoji}➤${row[0]} • <code>${row[1]}</code> • ${row[2]} • ${row[3]} • ${row[4]}</blockquote>`
-    ).join("\n");
+    const formattedResults = results.map(row => {
+      const additionalEmoji = row[2] > 0 ? emojis[Math.floor(Math.random() * emojis.length)] : '';
+     // `<blockquote>${randomEmoji}➤${row[0]} • <code>${row[1]}</code> • ${row[2]} • ${row[3]} • ${row[4]}</blockquote>`
+      return `<blockquote>➤${row[0]} • <code>${row[1]}</code> • ${additionalEmoji}${row[2]} • ${row[3]} • ${row[4]}</blockquote>`;
+    }).join("\n");
 
     const lastCacheUpdate = await getLastCacheUpdate(env);  // Mengambil timestamp dari KV
     const footer = `\n\n🕒 Cache terakhir diperbarui: <code>${lastCacheUpdate}</code>`;  // Pastikan ini menggunakan lastCacheUpdate, bukan LastCacheUpdate
