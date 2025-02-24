@@ -1,4 +1,4 @@
-import { searchDatabase } from './master.js';
+import { searchDatabase, getLastCacheUpdate } from './master.js';
 import { searchInout } from './inout.js';
 import { config } from './config.js';
 import { sendLog } from './log.js';
@@ -9,7 +9,8 @@ import { resetAllCache } from './reset.js';
 import { helpText, asciiArt, startMsg } from './help.js';
 import { searchList } from './list.js';
 import { setWebhook, unsetWebhook } from './webhook.js';
-import { sendMessage, sendMessageWithButton, sendMessageWithJoinButton, splitAndSend, sendWaButton } from './telegram.js';
+import { sendMessage, sendMessageWithButton, sendMessageWithJoinButton, splitAndSend, sendWaButton, editMessageText } from './telegram.js';
+
 
 const token = config.TOKEN;
 const channelId = config.CHANNEL_ID;
@@ -51,14 +52,19 @@ export default {
 
       // Handle /start command
       if (text.startsWith('/start')) {
-        await sendMessageWithButton(chatId, `${startMsg}`);
+        await sendMessageWithButton(chatId, `Heeyyy ${fullName} ${username}${startMsg}`);
         return new Response('Start command handled', { status: 200 });
       }
 
       // Handle /reset command
       if (text === '/reset') {
+        const initialMessage = await sendMessage(chatId, '⚙️<i>Mereset cache.....</i>');
+        const messageId = initialMessage.result.message_id;
+        //await sendMessage(chatId, '⚙️<i>Mereset cache.....</i>');
         await resetAllCache(env);
-        await sendMessage(chatId, '♻️ Cache berhasil di-reset!');
+        const CacheLatest = await getLastCacheUpdate(env);
+        await editMessageText(chatId, messageId, `♻️ Cache berhasil di-reset dan database berhasil di update ke versi <i>v${CacheLatest}</i>\nBy ${fullName} ${username}`);
+        //await sendMessage(chatId, '♻️ Cache berhasil di-reset!');
         return new Response('Cache reset command handled', { status: 200 });
       }
 
@@ -92,7 +98,8 @@ export default {
         const query = text.substring(1).trim();
         responseText = query ? await searchInout(query, env) : "⚠️ Tidak bisa tanpa kata kunci.";
       } else {
-        responseText = await searchDatabase(text, env);
+        //responseText = await searchDatabase(text, env);
+        responseText = await searchDatabase(text, env, { fullName, username });
         
       }
       
@@ -118,3 +125,5 @@ export default {
     return new Response('Not Found', { status: 404 });
   }
 };
+
+

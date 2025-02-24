@@ -8,9 +8,5 @@ export async function resetAllCache(env) { // Tambahkan `async`
   await resetInoutCache(env);
   await resetListCache();
   await resetCacheStok();
-  console.log("♻️ Cache utama telah direset");
-  console.log("♻️ Cache inout telah direset");
-  console.log("♻️ Cache stok telah direset");
-  console.log("♻️ Cache list telah direset");
   console.log("♻️ Semua cache telah direset");
 }

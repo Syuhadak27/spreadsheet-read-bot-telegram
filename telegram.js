@@ -120,4 +120,20 @@ export async function sendWaButton(chatId, phoneNumber) {
     }
 }
 
+export async function editMessageText(chatId, messageId, text) {
+  const response = await fetch(`https://api.telegram.org/bot${token}/editMessageText`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      chat_id: chatId,
+      message_id: messageId,
+      text: text,
+      parse_mode: 'HTML'
+    })
+  });
+  
+  return await response.json();
+}
 

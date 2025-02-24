@@ -44,7 +44,7 @@ async function getFromKV(env) {
   }
 }
 
-export async function searchDatabase(query, env) {
+export async function searchDatabase(query, env, { fullName, username }) {
   try {
     console.log("🔍 Mencari di KV...");
     let data = await getFromKV(env);
@@ -88,7 +88,7 @@ export async function searchDatabase(query, env) {
       return `<u>Kata kunci: </u><code>${query}</code>\n${asciiArt}`;
     }
 
-    const header = `📌 Kata Kunci: <code>${query}</code>`;
+    const header = `📌 Kata Kunci: <code>${query}</code>\nDicari oleh ${fullName} ${username}`;
     const formattedResults = results.map(row =>
       `<blockquote>➤${row[0]} • <code>${row[1]}</code> • ${row[2]} • ${row[3]} • ${row[4]}</blockquote>`
     ).join("\n");
@@ -103,8 +103,8 @@ export async function searchDatabase(query, env) {
   }
 }
 
-
-async function getLastCacheUpdate(env) {
+//tambahkan export
+export async function getLastCacheUpdate(env) {
   if (!env?.DATABASE_CACHE) {
     return "Belum pernah diperbarui";
   }
