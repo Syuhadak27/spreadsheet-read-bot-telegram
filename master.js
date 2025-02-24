@@ -47,9 +47,11 @@ async function getFromKV(env) {
 export async function searchDatabase(query, env, { fullName, username }) {
   try {
     const emojis = ['👻', '🚀', '🌟', '✨', '🎯', '🎨', '🎭', '🎪', '🎡', '🎢', '🌈', '☀️', '⭐', '🌙', '💫', '🍀', '🌺', '🌸', '🎵', '🎶'];
+    const emojiName = ['🦌','🐈','🦊','🐒','🐉','🦗','🦤','🐼','🐬','🦉','🐂','🦧'];
     
     // Pilih emoticon secara acak
     const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+    const randomEmojiName = emojiName[Math.floor(Math.random() * emojiName.length)];
     console.log("🔍 Mencari di KV...");
     let data = await getFromKV(env);
 
@@ -92,7 +94,7 @@ export async function searchDatabase(query, env, { fullName, username }) {
       return `<u>Kata kunci: </u><code>${query}</code>\n${asciiArt}`;
     }
 
-    const header = `📌 Kata Kunci: <code>${query}</code>by <i>${fullName} ${username}</i> ${randomEmoji}`;
+    const header = `📌 Kata Kunci: <code>${query}</code> <i>${randomEmojiName}${fullName} ${username}</i> `;
     const formattedResults = results.map(row =>
       `<blockquote>${randomEmoji}➤${row[0]} • <code>${row[1]}</code> • ${row[2]} • ${row[3]} • ${row[4]}</blockquote>`
     ).join("\n");
