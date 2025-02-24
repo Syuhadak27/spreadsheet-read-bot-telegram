@@ -11,7 +11,6 @@ import { searchList } from './list.js';
 import { setWebhook, unsetWebhook } from './webhook.js';
 import { sendMessage, sendMessageWithButton, sendMessageWithJoinButton, splitAndSend, sendWaButton, editMessageText } from './telegram.js';
 
-
 const token = config.TOKEN;
 const channelId = config.CHANNEL_ID;
 
@@ -39,8 +38,14 @@ export default {
       const fullName = `${firstName} ${lastName}`.trim();
       const displayName = `${fullName} ${username}`.trim();
 
-      if (!chatId || !text || !messageId || !userId) {
+      if (!chatId || !messageId || !userId) {
         return new Response('Invalid request', { status: 400 });
+      }
+
+      // Tangani pesan media
+      if (update.message?.sticker || update.message?.photo || update.message?.video || update.message?.document || update.message?.audio || update.message?.voice) {
+        await sendMessage(chatId, "⚠️ Bot hanya dapat memproses perintah berbentuk teks.");
+        return new Response('Media message received, but not supported', { status: 200 });
       }
 
       // Cek apakah user sudah join channel
@@ -60,16 +65,13 @@ export default {
       if (text === '/reset') {
         const initialMessage = await sendMessage(chatId, '⚙️<i>Mereset cache.....</i>');
         const messageId = initialMessage.result.message_id;
-        //await sendMessage(chatId, '⚙️<i>Mereset cache.....</i>');
         await resetAllCache(env);
         const CacheLatest = await getLastCacheUpdate(env);
         await editMessageText(chatId, messageId, `♻️ Cache berhasil di-reset dan database berhasil di update ke versi <i>v${CacheLatest}</i>\nBy ${fullName} ${username}`);
-        //await sendMessage(chatId, '♻️ Cache berhasil di-reset!');
         return new Response('Cache reset command handled', { status: 200 });
       }
 
       if (text === '/help') {
-        console.log('Help command received:', chatId);
         await sendMessage(chatId, helpText);
         return new Response('Help command handled', { status: 200 });
       }
@@ -98,25 +100,20 @@ export default {
         const query = text.substring(1).trim();
         responseText = query ? await searchInout(query, env) : "⚠️ Tidak bisa tanpa kata kunci.";
       } else {
-        //responseText = await searchDatabase(text, env);
         responseText = await searchDatabase(text, env, { fullName, username });
-        
       }
       
       if (!responseText) {
-        //responseText = `Kata kunci: ${text}\n\n${asciiArt}`;
         responseText = `{asciiArt}`;
       }
 
-// Jika teks lebih dari 4096 karakter, gunakan splitAndSend
       if (responseText.length > 4096) {
         await splitAndSend(chatId, responseText);
       } else {
         await sendMessage(chatId, responseText);
       }
-      // Hapus pesan user setelah 4 detik (opsional)
+      
       setTimeout(() => deleteMessage(chatId, messageId, token), 3);
-
       await sendLog(displayName, text);
 
       return new Response('Request handled', { status: 200 });
@@ -125,5 +122,3 @@ export default {
     return new Response('Not Found', { status: 404 });
   }
 };
-
-
