@@ -39,3 +39,21 @@ Lalu edit dit file <code>wrangler.json</code> yg ada di <code>folder root proyek
   ]
 }
 ```
+
+## UI 
+
+chatAction yg di didikung <i>index.js line 80+</i>
+
+<code>typing</code>: Bot sedang mengetik.
+
+<code>upload_photo</code>: Bot sedang mengunggah foto.
+
+<code>upload_video</code>: Bot sedang mengunggah video.
+
+<code>upload_document</code>: Bot sedang mengunggah dokumen.
+
+<code>find_location</code>: Bot sedang mencari lokasi.
+
+<code>record_video</code>: Bot sedang merekam video.
+
+<code>upload_video_note</code>: Bot sedang mengunggah video note.
