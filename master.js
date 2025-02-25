@@ -1,6 +1,7 @@
 import { config } from './config.js';
 import { asciiArt } from './help.js';
 import { getRandomEmoji, getRandomEmojiName, emojis } from './emoji.js';
+import { sendSticker } from './telegram.js';
 
 // Fungsi untuk menyimpan ke KV
 async function saveToKV(data, env) {
@@ -44,16 +45,11 @@ async function getFromKV(env) {
   }
 }
 
-export async function searchDatabase(query, env, { fullName, username }) {
+export async function searchDatabase(query, env, { fullName, username, chatId, token }) {
   try {
-    //const emojis = ['👻', '🚀', '🌟', '✨', '🎯', '🎨', '🎭', '🎪', '🎡', '🎢', '🌈', '☀️', '⭐', '🌙', '💫', '🍀', '🌺', '🌸', '🎵', '🎶'];
-    //const emojiName = ['🦌','🐈','🦊','🐒','🐉','🦗','🦤','🐼','🐬','🦉','🐂','🦧'];
-    
-    // Pilih emoticon secara acak
+   
     const randomEmoji = getRandomEmoji();
     const randomEmojiName = getRandomEmojiName();
-    //const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
-    //const randomEmojiName = emojiName[Math.floor(Math.random() * emojiName.length)];
     console.log("🔍 Mencari di KV...");
     let data = await getFromKV(env);
 
@@ -93,7 +89,9 @@ export async function searchDatabase(query, env, { fullName, username }) {
     );
 
     if (results.length === 0) {
-      return `<u>Kata kunci: </u><code>${query}</code>\n${asciiArt}`;
+      const stikerError = await sendSticker(chatId, token);
+      return `${stikerError}`;
+      //return `<u>Kata kunci: </u><code>${query}</code>\n${asciiArt}`;
     }
 
     const header = `📌 Kata Kunci: <code>${query}</code> \n<i>${randomEmojiName} ${fullName} ${username}</i> `;
@@ -177,4 +175,3 @@ async function getCachedData(sheetId, range, cacheKey, apiKey) {
     return [];
   }
 }
-

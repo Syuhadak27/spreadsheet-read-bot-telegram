@@ -1,11 +1,12 @@
 import { config } from "./config.js";
 import { asciiArt } from './help.js';
+import { sendSticker } from './telegram.js';
 
 
 const SPREADSHEET_ID = config.SPREADSHEET_ID;
 const GOOGLE_API_KEY = config.GOOGLE_API_KEY;
 
-export async function searchInout(query, env) {
+export async function searchInout(query, env, { chatId, token }) {
   console.log("🔍 Mencari data di KV...");
   const sheetId = SPREADSHEET_ID;
   const apiKey = GOOGLE_API_KEY;
@@ -34,8 +35,11 @@ export async function searchInout(query, env) {
     keywords.every(keyword => row.some(cell => String(cell).toLowerCase().includes(keyword)))
   );
 
-  if (filteredData.length === 0) return `Kata kunci: <code>${query}</code>\n\n${asciiArt}`;
-
+  //if (filteredData.length === 0) return `Kata kunci: <code>${query}</code>\n\n${asciiArt}`;
+  if (filteredData.length === 0) {
+    await sendSticker(chatId, token);
+    return ""; // Hindari return objek agar tidak muncul [object Object]
+  }
   let totalMasuk = 0;
   let totalKeluar = 0;
   let sumByName = {};

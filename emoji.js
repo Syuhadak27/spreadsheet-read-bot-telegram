@@ -1,6 +1,6 @@
 // Daftar emoji
 export const emojis = ['👻', '🚀', '🌟', '✨', '🎯', '🎨', '🎭', '🎪', '🎡', '🎢', '🌈', '☀️', '⭐', '🌙', '💫', '🍀', '🌺', '🌸', '🎵', '🎶'];
-export const emojiName = ['🦌', '🐈', '🦊', '🐒', '🐉', '🦗', '🦤', '🐼', '🐬', '🦉', '🐂', '🦧'];
+export const emojiName = ['🦌', '🐈', '🦊', '🐒', '🐉', '🦗', '🐼', '🐬', '🦉', '🐂', '🦧'];
 
 // Fungsi untuk mendapatkan emoji acak
 export function getRandomEmoji() {

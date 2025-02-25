@@ -9,7 +9,7 @@ import { resetAllCache } from './reset.js';
 import { helpText, asciiArt, startMsg } from './help.js';
 import { searchList } from './list.js';
 import { setWebhook, unsetWebhook } from './webhook.js';
-import { sendMessage, sendMessageWithButton, sendMessageWithJoinButton, splitAndSend, sendWaButton, editMessageText, sendChatAction } from './telegram.js';
+import { sendMessage, sendMessageWithButton, sendMessageWithJoinButton, splitAndSend, sendWaButton, editMessageText, sendChatAction, sendSticker } from './telegram.js';
 
 const token = config.TOKEN;
 const channelId = config.CHANNEL_ID;
@@ -77,8 +77,8 @@ export default {
       }
       
       let responseText = "";
-      //await sendChatAction(chatId, 'typing'); // Bot menunjukkan sedang mengetik
-      await sendChatAction(chatId, 'upload_document');
+      await sendChatAction(chatId, 'typing'); // Bot menunjukkan sedang mengetik
+      //await sendChatAction(chatId, 'upload_document');
       
       
       if (text.startsWith('.stok') || text.startsWith('/stok')) {
@@ -102,14 +102,16 @@ export default {
         }
       } else if (text.startsWith('.')) {
         const query = text.substring(1).trim();
-        responseText = query ? await searchInout(query, env) : "⚠️ Tidak bisa tanpa kata kunci.";
+        responseText = query ? await searchInout(query, env, { chatId, token }) : "⚠️ Tidak bisa tanpa kata kunci.";
       } else {
-        responseText = await searchDatabase(text, env, { fullName, username });
+        responseText = await searchDatabase(text, env, { fullName, username, chatId, token });
+        //responseText = await searchDatabase(text, env, { fullName, username });
       }
       
-      if (!responseText) {
-        responseText = `{asciiArt}`;
-      }
+      //if (!responseText) {
+       // await sendSticker(chatId, token);
+        //responseText = `{asciiArt}`;
+      //}
 
       if (responseText.length > 4096) {
         await splitAndSend(chatId, responseText);
