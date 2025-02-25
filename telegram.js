@@ -1,4 +1,5 @@
 import { config } from './config.js';
+import { getRandomSticker } from "./emoji.js";
 
 const token = config.TOKEN;
 const CHANNEL_USERNAME = config.CHANNEL_USERNAME;
@@ -168,21 +169,6 @@ export async function sendChatAction(chatId, action) {
   });
 }
 
-
-const stickers = [
-  "CAACAgUAAxkBAAEN5VlnvZ3GnZ_bTSSo2jEaCD58ic1bfwACnAIAAiR5shGeO9MiU-MscDYE",
-  "CAACAgUAAxkBAAEN5VtnvZ3KJdPUOQp9oUbi28bhLUvfFwACggIAAiR5shGO6agItFMKHTYE",
-  "CAACAgUAAxkBAAEN5V1nvZ3PosimXxlLijHQPqZHuwccRwACjwIAAiR5shEtc_TZ_2WcNzYE",
-  "CAACAgUAAxkBAAEN5V9nvZ38Kam0u097aBFgXGE2P-nHpQACpgIAAiR5shGgUMm4M74GkDYE",
-  "CAACAgUAAxkBAAEN5X9nvbBjtoYlT0OIkhV0lyX7ytQv1wACrwIAAiR5shHUfMZoR1B73jYE"
-  // Tambahkan lebih banyak file_id stiker di sini
-];
-
-// Fungsi untuk memilih stiker secara acak
-function getRandomSticker() {
-  return stickers[Math.floor(Math.random() * stickers.length)];
-  
-}
 
 // Fungsi untuk mengirim stiker ke Telegram
 export async function sendSticker(chatId, token) {
