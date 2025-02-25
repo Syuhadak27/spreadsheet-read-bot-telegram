@@ -3,8 +3,24 @@ import { config } from './config.js';
 const token = config.TOKEN;
 const CHANNEL_USERNAME = config.CHANNEL_USERNAME;
 
+
+
 // Fungsi mengirim pesan dengan tombol Join Channel
+async function getChannelName() {
+  const url = `https://api.telegram.org/bot${token}/getChat?chat_id=@${CHANNEL_USERNAME}`;
+  const response = await fetch(url);
+  const data = await response.json();
+  
+  if (data.ok) {
+    return data.result.title; // Nama channel yang sebenarnya
+  } else {
+    return `@${CHANNEL_USERNAME}`; // Fallback ke username jika gagal
+  }
+}
+
 export async function sendMessageWithJoinButton(chatId, text) {
+  const channelName = await getChannelName(); // Ambil nama channel
+
   const url = `https://api.telegram.org/bot${token}/sendMessage`;
   const payload = {
     chat_id: chatId,
@@ -12,7 +28,7 @@ export async function sendMessageWithJoinButton(chatId, text) {
     parse_mode: 'HTML',
     reply_markup: JSON.stringify({
       inline_keyboard: [
-        [{ text: "📢 Bergabung dengan Channel", url: `https://t.me/${CHANNEL_USERNAME}` }]
+        [{ text: `📢 Join ${channelName}`, url: `https://t.me/${CHANNEL_USERNAME}` }]
       ]
     })
   };
@@ -25,6 +41,7 @@ export async function sendMessageWithJoinButton(chatId, text) {
 
   return response.ok ? await response.json() : null;
 }
+
 
 // Fungsi mengirim pesan dengan tombol Source Code
 export async function sendMessageWithButton(chatId, text) {
@@ -135,5 +152,19 @@ export async function editMessageText(chatId, messageId, text) {
   });
   
   return await response.json();
+}
+
+export async function sendChatAction(chatId, action) {
+  const url = `https://api.telegram.org/bot${config.TOKEN}/sendChatAction`;
+  const payload = {
+      chat_id: chatId,
+      action: action
+  };
+
+  await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+  });
 }
 

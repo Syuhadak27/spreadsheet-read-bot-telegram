@@ -35,7 +35,7 @@ export async function sendLog(username, query) {
                      `<blockquote><b>👤 User:</b> @${username}\n` +
                      `<b>📅 Tanggal:</b> ${date} ${time}\n` +
                      `<b>🔍 Kata Kunci:</b> <code>${query}</code></blockquote>\n\n` +
-                     `<i>🤖 Bot: ${botInfo.displayName}</i> (@${botInfo.username})\n` // Menampilkan username dan display name bot;
+                     `<i>🤖  ${botInfo.displayName}</i> (@${botInfo.username})\n` // Menampilkan username dan display name bot;
 
   await sendMessage(LOG_CHANNEL_ID, logMessage);
 }

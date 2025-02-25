@@ -9,7 +9,7 @@ import { resetAllCache } from './reset.js';
 import { helpText, asciiArt, startMsg } from './help.js';
 import { searchList } from './list.js';
 import { setWebhook, unsetWebhook } from './webhook.js';
-import { sendMessage, sendMessageWithButton, sendMessageWithJoinButton, splitAndSend, sendWaButton, editMessageText } from './telegram.js';
+import { sendMessage, sendMessageWithButton, sendMessageWithJoinButton, splitAndSend, sendWaButton, editMessageText, sendChatAction } from './telegram.js';
 
 const token = config.TOKEN;
 const channelId = config.CHANNEL_ID;
@@ -77,6 +77,10 @@ export default {
       }
       
       let responseText = "";
+      //await sendChatAction(chatId, 'typing'); // Bot menunjukkan sedang mengetik
+      await sendChatAction(chatId, 'upload_document');
+      
+      
       if (text.startsWith('.stok') || text.startsWith('/stok')) {
         const query = text.substring(5).trim();
         responseText = query ? await searchStok(query) : "⚠️ Tidak bisa tanpa kata kunci.";
