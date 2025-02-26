@@ -13,6 +13,7 @@ import { sendMessage, sendMessageWithButton, sendMessageWithJoinButton, splitAnd
 
 const token = config.TOKEN;
 const channelId = config.CHANNEL_ID;
+const CHAT_ACTION = false; // Bisa diubah ke false jika ingin menonaktifkan efek mengetik
 
 export default {
   async fetch(request, env) {
@@ -72,15 +73,17 @@ export default {
       }
 
       if (text === '/help') {
+        await sendChatAction(chatId, 'typing');
+        await new Promise(resolve => setTimeout(resolve, 1500)); // Tunggu 3 detik
         await sendMessage(chatId, helpText);
         return new Response('Help command handled', { status: 200 });
       }
       
       let responseText = "";
-      await sendChatAction(chatId, 'typing'); // Bot menunjukkan sedang mengetik
-      //await sendChatAction(chatId, 'upload_document');
-      
-      
+      if (CHAT_ACTION) {
+        await sendChatAction(chatId, 'typing');
+      }
+        
       if (text.startsWith('.stok') || text.startsWith('/stok')) {
         const query = text.substring(5).trim();
         responseText = query ? await searchStok(query) : "⚠️ Tidak bisa tanpa kata kunci.";
@@ -105,13 +108,7 @@ export default {
         responseText = query ? await searchInout(query, env, { chatId, token }) : "⚠️ Tidak bisa tanpa kata kunci.";
       } else {
         responseText = await searchDatabase(text, env, { fullName, username, chatId, token });
-        //responseText = await searchDatabase(text, env, { fullName, username });
-      }
-      
-      //if (!responseText) {
-       // await sendSticker(chatId, token);
-        //responseText = `{asciiArt}`;
-      //}
+      }      
 
       if (responseText.length > 4096) {
         await splitAndSend(chatId, responseText);

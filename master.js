@@ -94,11 +94,10 @@ export async function searchDatabase(query, env, { fullName, username, chatId, t
       //return `<u>Kata kunci: </u><code>${query}</code>\n${asciiArt}`;
     }
 
-    const header = `📌 Kata Kunci: <code>${query}</code> \n<i>${randomEmojiName} ${fullName} ${username}</i> `;
+    const header = `📌 Kata Kunci: <code>${query}</code> \n<i>${randomEmojiName} ${fullName} ${username} </i> `;
     const formattedResults = results.map(row => {
-      const additionalEmoji = row[2] > 0 ? emojis[Math.floor(Math.random() * emojis.length)] : '';
-     // `<blockquote>${randomEmoji}➤${row[0]} • <code>${row[1]}</code> • ${row[2]} • ${row[3]} • ${row[4]}</blockquote>`
-      return `<blockquote>➤${row[0]} • <code>${row[1]}</code> • ${additionalEmoji}${row[2]} • ${row[3]} • ${row[4]}</blockquote>`;
+    return `<blockquote>${randomEmojiName}${row[0]} • <code>${row[1]}</code> • ${row[2]} • ${row[3]} • ${row[4]}</blockquote>`
+     //return `<blockquote>➤${row[0]} • <code>${row[1]}</code> • ${row[2]} • ${row[3]} • ${row[4]}</blockquote>`
     }).join("\n");
 
     const lastCacheUpdate = await getLastCacheUpdate(env);  // Mengambil timestamp dari KV
