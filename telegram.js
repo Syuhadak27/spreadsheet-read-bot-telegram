@@ -53,8 +53,9 @@ export async function sendMessageWithButton(chatId, text) {
     parse_mode: 'HTML',
     reply_markup: JSON.stringify({
       inline_keyboard: [
-        [{ text: "📜 Source Code", url: "https://github.com/Syuhadak27/spreadsheet-read-bot-telegram" }],
-        [{ text: "👨‍💻 Owner", url: "https://t.me/AlfiSyuhadak" }, { text: "📢 Channel", url: `https://t.me/${CHANNEL_USERNAME}` }]
+        [{ text: "📜 Source Code", url: "https://github.com/Syuhadak27/spreadsheet-read-bot-telegram" }, { text: "📢 Channel", url: `https://t.me/${CHANNEL_USERNAME}` }],
+        [{ text: "👨‍💻 Owner", url: "https://t.me/AlfiSyuhadak" }, { text: "🎶Tiktok Downloader", url: "https://t.me/syd_search_bot" }],
+        [{ text: "👥Grup Mirror", url: "https://t.me/syd_download" }]
       ]
     })
   };
