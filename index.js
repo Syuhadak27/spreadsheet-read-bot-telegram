@@ -9,11 +9,21 @@ import { resetAllCache } from './reset.js';
 import { helpText, asciiArt, startMsg } from './help.js';
 import { searchList } from './list.js';
 import { setWebhook, unsetWebhook } from './webhook.js';
-import { sendMessage, sendMessageWithButton, sendMessageWithJoinButton, splitAndSend, sendWaButton, editMessageText, sendChatAction, sendSticker } from './telegram.js';
+import { handleMenu, handleCallback, getChatActionStatus } from './menu.js';
+import { 
+  sendMessage, 
+  sendMessageWithButton, 
+  sendMessageWithJoinButton, 
+  splitAndSend, 
+  sendWaButton, 
+  editMessageText, 
+  sendChatAction, 
+  sendSticker 
+} from './telegram.js';
 
 const token = config.TOKEN;
 const channelId = config.CHANNEL_ID;
-const CHAT_ACTION = false; // Bisa diubah ke false jika ingin menonaktifkan efek mengetik
+let CHAT_ACTION = false; // Will be updated from KV storage
 
 export default {
   async fetch(request, env) {
@@ -29,6 +39,13 @@ export default {
 
     if (pathname === '/webhook') {
       const update = await request.json();
+
+      // Handle callback query untuk menu
+      if (update.callback_query) {
+        await handleCallback(update.callback_query, env);
+        return new Response('Callback handled', { status: 200 });
+      }
+
       const chatId = update.message?.chat?.id;
       const text = update.message?.text;
       const messageId = update.message?.message_id;
@@ -43,24 +60,46 @@ export default {
         return new Response('Invalid request', { status: 400 });
       }
 
+      // Handle /menu command
+      if (text === '/menu') {
+        await handleMenu(chatId, userId, env);
+        return new Response('Menu command handled', { status: 200 });
+      }
+
+      // Update CHAT_ACTION status from KV
+      CHAT_ACTION = await getChatActionStatus(env);
+
       // Tangani pesan media
-      if (update.message?.sticker || update.message?.photo || update.message?.video || update.message?.document || update.message?.audio || update.message?.voice) {
+      if (update.message?.sticker || update.message?.photo || update.message?.video || 
+          update.message?.document || update.message?.audio || update.message?.voice) {
         await sendMessage(chatId, "⚠️ Bot hanya dapat memproses perintah berbentuk teks.");
         return new Response('Media message received, but not supported', { status: 200 });
       }
 
-      // Cek apakah user sudah join channel
-      const isMember = await isUserMember(userId, token, channelId);
-      if (!isMember) {
-        await sendMessageWithJoinButton(chatId, '⚠️ Anda harus bergabung dengan channel terlebih dahulu untuk menggunakan bot ini.');
-        return new Response('User not member', { status: 200 });
-      }
 
       // Handle /start command
       if (text.startsWith('/start')) {
         await sendMessageWithButton(chatId, `Heeyyy ${fullName} ${username}${startMsg}`);
         return new Response('Start command handled', { status: 200 });
       }
+
+      if (text === '/help') {
+        if (CHAT_ACTION) {
+          await sendChatAction(chatId, 'typing');
+          await new Promise(resolve => setTimeout(resolve, 1500));
+        }
+        //await sendMessage(chatId, helpText);
+        await sendMessage(chatId, `Heyy ${fullName} ${username} ${helpText}`);
+        return new Response('Help command handled', { status: 200 });
+      }
+
+      // Cek apakah user sudah join channel
+      const isMember = await isUserMember(userId, token, channelId);
+      if (!isMember) {
+          await sendMessageWithJoinButton(chatId, '⚠️ Anda harus bergabung dengan channel terlebih dahulu untuk menggunakan bot ini.');
+          return new Response('User not member', { status: 200 });
+      }
+      
 
       // Handle /reset command
       if (text === '/reset') {
@@ -72,12 +111,7 @@ export default {
         return new Response('Cache reset command handled', { status: 200 });
       }
 
-      if (text === '/help') {
-        await sendChatAction(chatId, 'typing');
-        await new Promise(resolve => setTimeout(resolve, 1500)); // Tunggu 3 detik
-        await sendMessage(chatId, helpText);
-        return new Response('Help command handled', { status: 200 });
-      }
+      
       
       let responseText = "";
       if (CHAT_ACTION) {

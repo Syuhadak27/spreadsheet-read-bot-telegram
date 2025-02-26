@@ -1,5 +1,5 @@
 
-export const helpText = `<b>Heyyy! 👋 Kamu sedang berinteraksi dengan bot canggih ini, nih! ✨</b>\n
+export const helpText = `<b>\n 👋Kamu sedang berinteraksi dengan bot canggih ini, nih! ✨</b>\n
 <b>Cek fitur-fitur keren yang bisa kamu coba:</b>\n
 1️⃣ <b>/start</b> - Nyalakan bot dan siap-siap untuk mulai! 🚀\n
 2️⃣ <b>.stok &lt;KataKunci🗝️&gt;</b> - Cari stok barang yang kamu butuhkan. Gampang banget, tinggal ketik nama barangnya. 📦\n
@@ -11,7 +11,7 @@ export const helpText = `<b>Heyyy! 👋 Kamu sedang berinteraksi dengan bot cang
 <b>Selamat berpetualang! 🛸</b>\n\n
 <i>Stay awesome! 🤘</i>`;
 
-export const startMsg = `👋 ✅ Bot Aktif dan Siap Digunakan ya,\n\nBot berjalan di serverless Cloudflare.
+export const startMsg = `\n👋 ✅ Bot Aktif dan Siap Digunakan ya,\n\nBot berjalan di serverless Cloudflare.
 Fitur-fitur dan cara penggunaan bot buka /help `;
 
 export const asciiArt = `\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣤⣴⣾⣿⣿⣿⡄

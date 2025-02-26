@@ -32,7 +32,7 @@ export async function sendLog(username, query) {
 
   console.log(`${date} ${time}`);
   const logMessage = `<b>📌 Log Pencarian</b>\n` +
-                     `<blockquote><b>👤 User:</b> @${username}\n` +
+                     `<blockquote><b>👤 User:</b> ${username}\n` +
                      `<b>📅 Tanggal:</b> ${date} ${time}\n` +
                      `<b>🔍 Kata Kunci:</b> <code>${query}</code></blockquote>\n\n` +
                      `<i>🤖  ${botInfo.displayName}</i> (@${botInfo.username})\n` // Menampilkan username dan display name bot;
