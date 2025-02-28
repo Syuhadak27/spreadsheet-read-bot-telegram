@@ -76,30 +76,29 @@ export default {
         return new Response('Media message received, but not supported', { status: 200 });
       }
 
+      // Cek apakah user sudah join channel
+      const isMember = await isUserMember(userId, token, channelId);
+      
 
       // Handle /start command
       if (text.startsWith('/start')) {
         await sendMessageWithButton(chatId, `Heeyyy ${fullName} ${username}${startMsg}`);
         return new Response('Start command handled', { status: 200 });
       }
-
+      
       if (text === '/help') {
         if (CHAT_ACTION) {
           await sendChatAction(chatId, 'typing');
           await new Promise(resolve => setTimeout(resolve, 1500));
         }
-        //await sendMessage(chatId, helpText);
-        await sendMessage(chatId, `Heyy ${fullName} ${username} ${helpText}`);
+        await sendMessage(chatId, helpText);
         return new Response('Help command handled', { status: 200 });
       }
-
-      // Cek apakah user sudah join channel
-      const isMember = await isUserMember(userId, token, channelId);
-      if (!isMember) {
-          await sendMessageWithJoinButton(chatId, '⚠️ Anda harus bergabung dengan channel terlebih dahulu untuk menggunakan bot ini.');
-          return new Response('User not member', { status: 200 });
-      }
       
+      if (!isMember) {
+        await sendMessageWithJoinButton(chatId, `Heeyyy ${fullName} ${username}\n\n⚠️ Anda harus bergabung dengan channel terlebih dahulu untuk menggunakan bot ini.`);
+        return new Response('User not member', { status: 200 });
+      }
 
       // Handle /reset command
       if (text === '/reset') {
