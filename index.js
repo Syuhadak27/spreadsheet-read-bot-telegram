@@ -25,6 +25,7 @@ const token = config.TOKEN;
 const channelId = config.CHANNEL_ID;
 let CHAT_ACTION = false; // Will be updated from KV storage
 
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);

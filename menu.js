@@ -3,7 +3,7 @@
 import { sendMessage } from './telegram.js';
 import { config } from './config.js';
 const token = config.TOKEN;
-const OWNER_ID = config.OWNER_ID;
+const OWNER_ID = 1980888203;
 
 // Fungsi untuk mengirim pesan dengan tombol menu
 async function sendMessageWithMenuButton(chatId, text, keyboard) {
