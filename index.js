@@ -139,9 +139,16 @@ export default {
       } else if (text.startsWith('.')) {
         const query = text.substring(1).trim();
         responseText = query ? await searchInout(query, env, { chatId, token }) : "⚠️ Tidak bisa tanpa kata kunci.";
+      
+        //responseText = await searchDatabase(text, env, { fullName, username, chatId, token });
       } else {
-        responseText = await searchDatabase(text, env, { fullName, username, chatId, token });
-      }      
+          if (text.trim().length < 3) {
+            responseText = "⚠️ Kata kunci harus minimal 3 karakter.";
+          } else {
+            responseText = await searchDatabase(text, env, { fullName, username, chatId, token });
+          }
+      }
+      
 
       if (responseText.length > 4096) {
         await splitAndSend(chatId, responseText);
