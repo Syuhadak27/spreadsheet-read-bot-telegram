@@ -55,7 +55,7 @@ export async function searchInout(query, env, { chatId, token }) {
     totalKeluar += keluar;
     sumByName[name] = (sumByName[name] || 0) + keluar;
 
-    return `<blockquote>${formattedDate} • <code>${row[1]}</code> • ${row[2]} • ${row[3]} • ${row[4]} • ${name}</blockquote>`;
+    return `<blockquote><code>${formattedDate}</code> • <code>${row[1]}</code> • ${row[2]} • ${row[3]} • ${row[4]} • ${name}</blockquote>`;
   }).join("\n");
 
   const totalTersisa = totalMasuk - totalKeluar;
