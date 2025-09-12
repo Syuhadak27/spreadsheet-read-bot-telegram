@@ -1,15 +1,29 @@
-import { searchDatabase } from './master.js';
+import { searchDatabase, getLastCacheUpdate } from './master.js';
 import { searchInout } from './inout.js';
-import { resetAllCache } from './cache_inout.js';
 import { config } from './config.js';
 import { sendLog } from './log.js';
 import { deleteMessage } from './delete.js';
 import { isUserMember } from './fsub.js';
-const resetCache = resetAllCache;
+import { searchStok } from './stok.js';
+import { resetAllCache } from './reset.js';
+import { helpText, asciiArt, startMsg } from './help.js';
+import { searchList } from './list.js';
+import { setWebhook, unsetWebhook } from './webhook.js';
+import { handleMenu, handleCallback, getChatActionStatus } from './menu.js';
+import { 
+  sendMessage, 
+  sendMessageWithButton, 
+  sendMessageWithJoinButton, 
+  splitAndSend, 
+  sendWaButton, 
+  editMessageText, 
+  sendChatAction, 
+  sendSticker 
+} from './telegram.js';
+
 const token = config.TOKEN;
-const webhookUrl = config.WEBHOOK_URL;
-const channelId = config.CHANNEL_ID; 
-const CHANNEL_USERNAME = config.CHANNEL_USERNAME;
+const channelId = config.CHANNEL_ID;
+let CHAT_ACTION = false; // Will be updated from KV storage
 
 export default {
   async fetch(request, env) {
@@ -19,69 +33,133 @@ export default {
     if (pathname === '/setWebhook') {
       return setWebhook(env);
     }
+    if (pathname === '/unsetWebhook') {
+      return unsetWebhook(env);
+    }
 
     if (pathname === '/webhook') {
       const update = await request.json();
+
+      // Handle callback query untuk menu
+      if (update.callback_query) {
+        await handleCallback(update.callback_query, env);
+        return new Response('Callback handled', { status: 200 });
+      }
+
       const chatId = update.message?.chat?.id;
       const text = update.message?.text;
       const messageId = update.message?.message_id;
-      const userId = update.message?.from?.id; // ambil user id
-      const firstName = (update.message?.from?.first_name || "Unknown").replace(/@/g, ""); 
-      const username = update.message?.from?.username ? `(@${update.message.from.username})` : "";
-      const displayName = `${firstName} ${username}`.trim();
-      //const username = update.message?.from?.username || update.message?.from?.first_name || "Unknown";
+      const userId = update.message?.from?.id;
+      const firstName = (update.message?.from?.first_name || "Unknown").replace(/@/g, "");
+      const lastName = update.message?.from?.last_name ? update.message.from.last_name.replace(/@/g, "") : "";
+      const username = update.message?.from?.username ? `(@${update.message.from.username})` : "N/A";
+      const fullName = `${firstName} ${lastName}`.trim();
+      const displayName = `${fullName} ${username}`.trim();
 
-      if (!chatId || !text || !messageId || !userId) {
+      if (!chatId || !messageId || !userId) {
         return new Response('Invalid request', { status: 400 });
       }
 
-      // Pengecekan keanggotaan channel
-      const isMember = await isUserMember(userId, token, channelId);
-      if (!isMember) {
-        // Kirim pesan dengan tombol Join Channel
-        await sendMessageWithJoinButton(chatId, '⚠️ Anda harus bergabung dengan channel terlebih dahulu untuk menggunakan bot ini. Silahkan bergabung dengan channel:', token);
-        return new Response('User not member', { status: 200 });
+      // CEK JIKA CHAT_ACTION FALSE, KIRIM PESAN PERBAIKAN
+      
+
+      // Handle /menu command
+      if (text === '/menu') {
+        await handleMenu(chatId, userId, env);
+        return new Response('Menu command handled', { status: 200 });
       }
 
-      // Handle /start command with Source Code button
+      // Update CHAT_ACTION status from KV
+      CHAT_ACTION = await getChatActionStatus(env);
+
+      // Tangani pesan media
+      if (update.message?.sticker || update.message?.photo || update.message?.video || 
+          update.message?.document || update.message?.audio || update.message?.voice) {
+        await sendMessage(chatId, "⚠️ Bot hanya dapat memproses perintah berbentuk teks.");
+        return new Response('Media message received, but not supported', { status: 200 });
+      }
+
+      if (!CHAT_ACTION) {
+        await sendMessage(chatId, "⚠️ Bot lagi perbaikan");
+        return new Response('Bot under maintenance', { status: 200 });
+      }
+
+
+      // Handle /start command
       if (text.startsWith('/start')) {
-        await sendMessageWithButton(chatId, '✅ Bot Aktif dan Siap Digunakan!\n\nBot berjalan di serverless Cloudflare.🥱🥱🥱', token);
+        await sendMessageWithButton(chatId, `Heeyyy ${fullName} ${username}${startMsg}`);
         return new Response('Start command handled', { status: 200 });
       }
 
-      // Handle /reset command to reset cache
+      if (text === '/help') {
+        if (CHAT_ACTION) {
+          await sendChatAction(chatId, 'typing');
+          await new Promise(resolve => setTimeout(resolve, 1500));
+        }
+        //await sendMessage(chatId, helpText);
+        await sendMessage(chatId, `Heyy ${fullName} ${username} ${helpText}`);
+        return new Response('Help command handled', { status: 200 });
+      }
+
+      // Cek apakah user sudah join channel
+      const isMember = await isUserMember(userId, token, channelId);
+      if (!isMember) {
+          await sendMessageWithJoinButton(chatId, '⚠️ Anda harus bergabung dengan channel terlebih dahulu untuk menggunakan bot ini.');
+          return new Response('User not member', { status: 200 });
+      }
+      
+
+      // Handle /reset command
       if (text === '/reset') {
-        resetCache();
-        await sendMessage(chatId, '♻️ Seluruh cache berhasil di-reset!', token);
+        const initialMessage = await sendMessage(chatId, '⚙️<i>Mereset cache.....</i>');
+        const messageId = initialMessage.result.message_id;
+        await resetAllCache(env);
+        const CacheLatest = await getLastCacheUpdate(env);
+        await editMessageText(chatId, messageId, `♻️ Cache berhasil di-reset dan database berhasil di update ke versi <i>v${CacheLatest}</i>\nBy ${fullName} ${username}`);
         return new Response('Cache reset command handled', { status: 200 });
       }
 
-      let responseText;
-      if (text.startsWith('.')) {
+      
+      
+      let responseText = "";
+      if (CHAT_ACTION) {
+        await sendChatAction(chatId, 'typing');
+      }
+        
+      if (text.startsWith('.stok') || text.startsWith('/stok')) {
+        const query = text.substring(5).trim();
+        responseText = query ? await searchStok(query) : "⚠️ Tidak bisa tanpa kata kunci.";
+      } else if (text.startsWith('.list') || text.startsWith('/list')) {
+        const query = text.substring(5).trim();
+        responseText = query ? await searchList(query) : "⚠️ Tidak bisa tanpa kata kunci.";
+      } else if (text.startsWith('/wa')) {
+        let query = text.substring(3).trim();
+        if (!query) {
+          responseText = "⚠️ Harap masukkan nomor setelah /wa, contoh: /wa 0821234567890 atau /wa +6281234567890";
+        } else {
+          if (query.startsWith('0')) {
+            query = query.replace(/^0+/, '62');
+          } else if (query.startsWith('+')) {
+            query = query.replace(/^\+/, '');
+          }
+          await sendWaButton(chatId, query);
+          return new Response('WA button sent', { status: 200 });
+        }
+      } else if (text.startsWith('.')) {
         const query = text.substring(1).trim();
-        responseText = query ? await searchInout(query) : "Tidak bisa tanpa kata kunci";
+        responseText = query ? await searchInout(query, env, { chatId, token }) : "⚠️ Tidak bisa tanpa kata kunci.";
       } else {
-        responseText = await searchDatabase(text);
+        responseText = await searchDatabase(text, env, { fullName, username, chatId, token });
+      }      
+
+      if (responseText.length > 4096) {
+        await splitAndSend(chatId, responseText);
+      } else {
+        await sendMessage(chatId, responseText);
       }
-
-      if (!responseText) {
-        responseText = `Kata kunci: ${text}\n\n${asciiArt}`;
-      }
-
-      setTimeout(async () => {
-        await deleteMessage(chatId, messageId, token);
-      }, 6); // Menghapus pesan setelah 6 detik
-
-      // Log user query
-      //await sendLog(username, text);
+      
+      setTimeout(() => deleteMessage(chatId, messageId, token), 3);
       await sendLog(displayName, text);
-
-      let botMessage;
-      if (responseText.length > 4000) {
-        botMessage = await splitAndSend(chatId, responseText, token);
-      } else {
-        botMessage = await sendMessage(chatId, responseText, token);
-      }
 
       return new Response('Request handled', { status: 200 });
     }
@@ -89,101 +167,3 @@ export default {
     return new Response('Not Found', { status: 404 });
   }
 };
-
-// Function to send a message with Source Code button and Channel join button
-async function sendMessageWithJoinButton(chatId, text, token) {
-  const url = `https://api.telegram.org/bot${token}/sendMessage`;
-  const payload = {
-    chat_id: chatId,
-    text: text,
-    parse_mode: 'HTML',
-    reply_markup: JSON.stringify({
-      inline_keyboard: [
-        [
-          { text: "📢 Bergabung dengan Channel", url: `https://t.me/${CHANNEL_USERNAME}` }
-        ]
-      ]
-    })
-  };
-
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
-
-  return response.ok ? await response.json() : null;
-}
-
-// Function to send a message with Source Code button and Channel join button for members
-async function sendMessageWithButton(chatId, text, token) {
-  const url = `https://api.telegram.org/bot${token}/sendMessage`;
-  const payload = {
-    chat_id: chatId,
-    text: text,
-    parse_mode: 'HTML',
-    reply_markup: JSON.stringify({
-      inline_keyboard: [
-        [
-          { text: "📜 Source Code", url: "https://github.com/Syuhadak27/spreadsheet-read-bot-telegram/tree/cloudflare" }
-        ],
-        [
-          { text: "👨‍💻 Owner", url: "https://t.me/AlfiSyuhadak" },
-          { text: "📢 Channel", url: `https://t.me/${CHANNEL_USERNAME}` }
-        ]
-      ]
-    })
-  };
-
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
-
-  return response.ok ? await response.json() : null;
-}
-
-// Function to send a regular message
-async function sendMessage(chatId, text, token) {
-  const url = `https://api.telegram.org/bot${token}/sendMessage`;
-  const payload = {
-    chat_id: chatId,
-    text: text,
-    parse_mode: 'HTML',
-  };
-
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
-
-  return response.ok ? await response.json() : null;
-}
-
-async function splitAndSend(chatId, text, token) {
-  const maxLength = 4000;
-  const messages = [];
-
-  while (text.length > maxLength) {
-    let splitAt = text.lastIndexOf("</blockquote>", maxLength);
-    if (splitAt === -1) splitAt = text.lastIndexOf(" ", maxLength);
-    if (splitAt === -1) splitAt = maxLength;
-
-    const part = text.substring(0, splitAt + "</blockquote>".length);
-    messages.push(part);
-
-    text = text.substring(splitAt + "</blockquote>".length).trim();
-  }
-
-  if (text.length > 0) messages.push(text);
-
-  for (const msg of messages) {
-    await sendMessage(chatId, msg, token);
-  }
-}
-
-const asciiArt = `\n╔════▣⚫▣════╗\n╚════▣⚫▣════╝\n\n╔⏤⏤⏤╝👑╚⏤⏤⏤╗\n╚⏤⏤⏤╗🌺╔⏤⏤⏤╝`;
-
-

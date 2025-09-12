@@ -1,5 +1,4 @@
 import { config } from "./config.js";
-
 const BOT_TOKEN = config.TOKEN;
 const LOG_CHANNEL_ID = config.LOG_CHANNEL_ID; // ID channel log Telegram
 
@@ -32,11 +31,11 @@ export async function sendLog(username, query) {
   const botInfo = await getBotInfo();
 
   console.log(`${date} ${time}`);
-  const logMessage = `<blockquote><b>📌 Log Pencarian</b>\n` +
-                     `<b>👤 User:</b> @${username}\n` +
+  const logMessage = `<b>📌 Log Pencarian</b>\n` +
+                     `<blockquote><b>👤 User:</b> ${username}\n` +
                      `<b>📅 Tanggal:</b> ${date} ${time}\n` +
                      `<b>🔍 Kata Kunci:</b> <code>${query}</code></blockquote>\n\n` +
-                     `<i>🤖 Bot: ${botInfo.displayName}</i> (@${botInfo.username})\n` // Menampilkan username dan display name bot;
+                     `<i>🤖  ${botInfo.displayName}</i> (@${botInfo.username})\n` // Menampilkan username dan display name bot;
 
   await sendMessage(LOG_CHANNEL_ID, logMessage);
 }
